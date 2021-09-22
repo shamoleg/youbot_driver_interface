@@ -14,7 +14,21 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS thread date_time filesystem system)
+find_package(Boost REQUIRED COMPONENTS 
+  thread 
+  date_time 
+  filesystem 
+  system
+)
+
+## preprocessor definitions
+ADD_DEFINITIONS(-DYOUBOT_CONFIGURATIONS_DIR=${youbot_driver_CONFIG_DIR})
+
+INCLUDE_DIRECTORIES(
+	include
+	${catkin_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIR}
+)	
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -103,10 +117,9 @@ find_package(Boost REQUIRED COMPONENTS thread date_time filesystem system)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES youbot_driver_interface
-#  CATKIN_DEPENDS roscpp youbot_driver youbot_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS  
+  youbot_driver 
+  roscpp
 )
 
 ###########
@@ -115,11 +128,6 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-	include
-	${catkin_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIR}
-)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -129,13 +137,16 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(${PROJECT_NAME}  ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}  ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/youbot_driver_interface_node.cpp)
-
+add_executable(youbot_driver_interface 
+    src/youbot_node.cpp 
+    # src/joint_state_observer_oodl.cpp
+)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -149,7 +160,7 @@ add_dependencies(${PROJECT_NAME}  ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-${Boost_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 
 

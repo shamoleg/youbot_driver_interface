@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- Set relevant parameters. -->
+	<param name="youBotConfigurationFilePath" type="string" value="$(find youbot_driver)/config"/>
+
+	<!-- Default name values --> 
+	<param name="youBotBaseName" type="str" value="youbot-base"/>
+	<param name="youBotArmName1" type="str" value="youbot-manipulator"/>
+	
+
+	<!-- Start the driver. NOTE: Every joint topic is mapped to armName/joint_states -->
+	<node name="youbot_driver" pkg="youbot_driver_interface" type="youbot_driver_interface" output="screen">
+		<!-- <remap from="base/joint_states" to="/joint_states"/>  -->
+		<remap from="arm_1/joint_states" to="/joint_states"/> 
+	</node>
+
+	<!-- upoad URDF model to the parameter server -->  
+	<param name="robot_description" command="$(find xacro)/xacro.py '$(find youbot_description)/robots/youbot.urdf.xacro'"/>
+
+	<!-- start robot_state_publisher -->
+	<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher" output="screen"/>
+  
+</launch>
