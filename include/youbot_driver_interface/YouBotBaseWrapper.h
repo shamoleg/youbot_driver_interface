@@ -4,6 +4,7 @@
 /* ROS includes */
 #include "youbot_msgs/ReadingsFromSensors.h"
 #include "sensor_msgs/JointState.h"
+#include "std_msgs/Int32MultiArray.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Pose2D.h"
 #include "nav_msgs/Odometry.h"
@@ -32,13 +33,16 @@ public:
     youbot::YouBotBase* youBotBase;
     
     void initializeBase(std::string baseName);
+
+    void CallbackSetBaseVelocity(const geometry_msgs::Twist& youbotBaseVelocity);
+    void CallbackSetBasePosition(const geometry_msgs::Pose2D& youbotBasePosition);
+    void CallbackSetJointVelocity(const std_msgs::Int32MultiArray data);
+    void CallbackSetJointCurrent(const std_msgs::Int32MultiArray data);
+    void CallbackSetJointToque(const std_msgs::Int32MultiArray data);
+
+
     int move();
     void stop();
-
-    void CallbackSetBaseVelocity(const geometry_msgs::Twist& youbotBaseCommand);
-    void CallbackSetBasePosition(const geometry_msgs::Pose2D& youbotBaseCommand);
-
-    bool reconnectCallback(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 
     /* Configuration: */
     YouBotConfiguration youBotConfiguration;
