@@ -2,30 +2,20 @@ cmake_minimum_required(VERSION 3.0.2)
 project(youbot_driver_interface)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  youbot_driver
-  youbot_msgs
-)
-
-## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS 
-  thread 
-  date_time 
-  filesystem 
-  system
-)
+find_package(catkin REQUIRED COMPONENTS youbot_driver youbot_msgs roscpp rosconsole actionlib tf control_msgs brics_actuator pr2_msgs diagnostic_msgs geometry_msgs nav_msgs pr2_msgs std_msgs std_srvs trajectory_msgs)
+find_package(Boost REQUIRED COMPONENTS thread date_time filesystem system)
 
 ## preprocessor definitions
 ADD_DEFINITIONS(-DYOUBOT_CONFIGURATIONS_DIR=${youbot_driver_CONFIG_DIR})
 
 INCLUDE_DIRECTORIES(
 	include
+  include/youbot_driver_interface
 	${catkin_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIR}
 )	
@@ -144,7 +134,10 @@ catkin_package(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/youbot_driver_interface_node.cpp)
 add_executable(youbot_driver_interface 
-    src/youbot_node.cpp 
+    src/youbot_node.cpp
+    src/YouBotConfiguration.cpp
+    src/YouBotDriverWrapper.cpp
+    src/YouBotBaseWrapper.cpp
     # src/joint_state_observer_oodl.cpp
 )
 ## Rename C++ executable without prefix
@@ -163,6 +156,7 @@ target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
 )
 
+add_dependencies(youbot_driver_interface ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
@@ -194,7 +188,7 @@ target_link_libraries(${PROJECT_NAME}
 
 ## Mark cpp header files for installation
 install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
