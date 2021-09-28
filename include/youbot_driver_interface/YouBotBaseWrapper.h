@@ -34,14 +34,17 @@ public:
     
     void initializeBase(std::string baseName);
 
-    void CallbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity);
-    void CallbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition);
-    void CallbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity);
-    void CallbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent);
-    void CallbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque);
-    
+    void callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity);
+    void callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition);
+    void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity);
+    void callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent);
+    void callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque);
 
-    
+    ros::Subscriber subscriberBaseVelocity;
+    ros::Subscriber subscriberBasePosition;
+    ros::Subscriber subscriberJointVelocity;
+    ros::Subscriber subscriberJointCurrent;
+    ros::Subscriber subscriberJointToque;
 
     int move();
     void stop();

@@ -9,6 +9,12 @@ namespace youBot
 YouBotBaseWrapper::YouBotBaseWrapper(ros::NodeHandle n):
 node(n){
 
+    subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
+    subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
+    subscriberJointVelocity = node.subscribe("base/joint/velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
+    subscriberJointCurrent = node.subscribe("base/joint/current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
+    subscriberJointToque = node.subscribe("base/joint/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+
     
 }
 
@@ -37,7 +43,7 @@ void YouBotBaseWrapper::initializeBase(std::string baseName = "youbot-base")
     youBotConfiguration.hasBase = true;
 }
 
-void YouBotBaseWrapper::CallbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity){
+void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity){
     if (youBotConfiguration.hasBase){
         quantity<si::velocity> longitudinalVelocity = msgBaseVelocity.linear.x * meter_per_second;
         quantity<si::velocity> transversalVelocity = msgBaseVelocity.linear.y * meter_per_second;
@@ -56,7 +62,7 @@ void YouBotBaseWrapper::CallbackSetBaseVelocity(const geometry_msgs::Twist& msgB
     }
 }
 
-void YouBotBaseWrapper::CallbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition){
+void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition){
     if (youBotConfiguration.hasBase){
         quantity<si::length> longitudinalPosition = msgBasePosition.x * meter;
         quantity<si::length> transversalPosition = msgBasePosition.y * meter;
@@ -75,7 +81,7 @@ void YouBotBaseWrapper::CallbackSetBasePosition(const geometry_msgs::Pose2D& msg
     }
 }
 
-void YouBotBaseWrapper::CallbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity){
+void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity){
     if (youBotConfiguration.hasBase){
         try{
             int jointNumber = 0;
@@ -98,7 +104,7 @@ void YouBotBaseWrapper::CallbackSetJointVelocity(const std_msgs::Float32MultiArr
     }
 }
 
-void YouBotBaseWrapper::CallbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent){
+void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent){
     if (youBotConfiguration.hasBase){
 
         try{
@@ -122,7 +128,7 @@ void YouBotBaseWrapper::CallbackSetJointCurrent(const std_msgs::Float32MultiArra
     }
 }
 
-void YouBotBaseWrapper::CallbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque){
+void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque){
     if (youBotConfiguration.hasBase){
         try{
             int jointNumber = 0;
@@ -160,6 +166,7 @@ int YouBotBaseWrapper::setBaseJointData(auto data) {
 	}
 	return true;
 }
+
 
 
 //TODO: del this
