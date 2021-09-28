@@ -95,7 +95,6 @@ void YouBotBaseWrapper::CallbackSetJointVelocity(const std_msgs::Float32MultiArr
     }
     else{
         ROS_ERROR("No base initialized!");
-        
     }
 }
 
