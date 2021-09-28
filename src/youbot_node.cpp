@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     youBot::YouBotDriverWrapper youBot(n);
 
-    n.param("youBotDriverCycleFrequencyInHz", youBot.base.youBotConfiguration.youBotDriverCycleFrequencyInHz, 1.0);
+    n.param("youBotDriverCycleFrequencyInHz", youBot.base.youBotConfiguration.youBotDriverCycleFrequencyInHz, 40.0);
     n.param<std::string>("youBotBaseName", youBot.base.youBotConfiguration.baseConfiguration.baseID, "youbot-base");
     n.param<std::string>("youBotConfigurationFilePath", youBot.base.youBotConfiguration.configurationFilePath, mkstr2(YOUBOT_CONFIGURATIONS_DIR));
     ros::Rate rate(youBot.base.youBotConfiguration.youBotDriverCycleFrequencyInHz);
@@ -34,7 +34,8 @@ int main(int argc, char **argv)
     // ROS_INFO("all good");
     while(n.ok()){
         ros::spinOnce();
-        // youBot.base.move();
+        youBot.base.calculationOdometry();
+        youBot.base.move();
         // youBot.computeOODLSensorReadings();
         rate.sleep();
     }

@@ -92,7 +92,7 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
                 jointNumber++;
             }
 
-            this->setBaseJointData(jointVelocitySetpoint);
+            youBotBase->setJointData(jointVelocitySetpoint);
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
@@ -116,7 +116,7 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
                 jointNumber++;
             }
 
-            this->setBaseJointData(JointCurrentSetpoint);
+            youBotBase->setJointData(JointCurrentSetpoint);
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
@@ -139,7 +139,7 @@ void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray:
                 jointNumber++;
             }
 
-            this->setBaseJointData(JointTorqueSetpoint);
+            youBotBase->setJointData(JointTorqueSetpoint);
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
@@ -152,8 +152,8 @@ void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray:
 }
 
 void YouBotBaseWrapper::calculationOdometry(){
-    // try{
-        ros::Time currentTime = ros::Time::now();
+    try{
+        currentTime = ros::Time::now();
 
         youbot::EthercatMaster::getInstance().AutomaticReceiveOn(false);
         quantity<si::length> longitudinalPosition;
@@ -189,24 +189,64 @@ void YouBotBaseWrapper::calculationOdometry(){
         odometryMessage.twist.twist.linear.x = longitudinalVelocity.value();
         odometryMessage.twist.twist.linear.y = transversalVelocity.value();
         odometryMessage.twist.twist.angular.z = angularVelocity.value();
-
-
+        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(true);
+    } catch (std::exception& e){
+        std::string errorMessage = e.what();
+        ROS_WARN("Cannot get base odometry: %s", errorMessage.c_str());
+    }
 }
 
-int YouBotBaseWrapper::setBaseJointData(auto data) {
-	if (youBotConfiguration.hasBase) { 
-		try {
-            youBotBase->setJointData(data);
-		} catch (std::exception& e) {
-			std::string errorMessage = e.what();
-			ROS_WARN("Cannot set BaseJointData: %s", errorMessage.c_str());
-			return false;
-		}
-	} else {
-		ROS_ERROR("No base initialized!");
-		return false;
-	}
-	return true;
+void YouBotBaseWrapper::readJointsSensor(){
+
+    currentTime = ros::Time::now();
+
+    youbot::JointSensedAngle jointAngle;
+    youbot::JointSensedVelocity jointVelocity;
+    youbot::JointSensedTorque jointTorque;
+    youbot::JointSensedCurrent jointCurrent;
+
+    int youBotNumberOfWheels = 4;
+    baseJointStateMessage.header.stamp = currentTime;
+    baseJointStateMessage.name.resize(youBotNumberOfWheels * 2); // *2 because of virtual wheel joints in the URDF description
+    baseJointStateMessage.position.resize(youBotNumberOfWheels * 2);
+    baseJointStateMessage.velocity.resize(youBotNumberOfWheels * 2);
+    baseJointStateMessage.effort.resize(youBotNumberOfWheels * 2);
+    baseJointStateMessage.current.resize(youBotNumberOfWheels * 2);
+
+    // ROS_ASSERT((youBotConfiguration.baseConfiguration.wheelNames.size() == static_cast<unsigned int> (youBotNumberOfWheels)));
+    for (int i = 0; i < youBotNumberOfWheels; ++i)
+    {
+        youBotBase->getBaseJoint(i + 1).getData(jointAngle); //youBot joints start with 1 not with 0 -> i + 1
+        youBotBase->getBaseJoint(i + 1).getData(jointVelocity);
+        youBotBase->getBaseJoint(i + 1).getData(jointTorque);
+        youBotBase->getBaseJoint(i + 1).getData(jointCurrent);
+
+        baseJointStateMessage.name[i] = youBotConfiguration.baseConfiguration.wheelNames[i];
+        baseJointStateMessage.position[i] = jointAngle.angle.value();
+        baseJointStateMessage.velocity[i] = jointVelocity.angularVelocity.value();
+        baseJointStateMessage.effort[i] = jointTorque.torque.value();
+        baseJointStateMessage.current[i] = jointCurrent.current.value();
+    }
+
+    /*
+        * Here we add values for "virtual" rotation joints in URDF - robot_state_publisher can't
+        * handle non-aggregated jointState messages well ...
+        */
+    // baseJointStateMessage.name[4] = "caster_joint_fl";
+    // baseJointStateMessage.position[4] = 0.0;
+
+    // baseJointStateMessage.name[5] = "caster_joint_fr";
+    // baseJointStateMessage.position[5] = 0.0;
+
+    // baseJointStateMessage.name[6] = "caster_joint_bl";
+    // baseJointStateMessage.position[6] = 0.0;
+
+    // baseJointStateMessage.name[7] = "caster_joint_br";
+    // baseJointStateMessage.position[7] = 0.0;
+
+    baseJointStateMessage.position[0] = -baseJointStateMessage.position[0];
+    baseJointStateMessage.position[2] = -baseJointStateMessage.position[2];
+
 }
 
 
@@ -218,7 +258,7 @@ int YouBotBaseWrapper::move() {
     currentStopMovement[1] = 0.18 * ampere;
     currentStopMovement[2] = 0.18 * ampere;
     currentStopMovement[3] = 0.18 * ampere;
-    this->setBaseJointData(currentStopMovement);
+    // this->setBaseJointData(currentStopMovement);
 
 }
 

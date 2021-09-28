@@ -54,6 +54,7 @@ public:
     ros::Subscriber subscriberJointToque;
 
     void calculationOdometry();
+    void readJointsSensor();
 
     int move();
     void stop();
@@ -61,7 +62,7 @@ public:
     /* Configuration: */
     YouBotConfiguration youBotConfiguration;
     ros::NodeHandle node;
-    static tf2_ros::TransformBroadcaster br;
+    tf2_ros::TransformBroadcaster br;
     
 
     // std::vector<youbot::JointAngleSetpoint> JointData;
@@ -73,7 +74,8 @@ private:
     // ros::Subscriber sub3;
     // YouBotBaseWrapper(){};
 
-    int setBaseJointData(auto data);
+    // int setBaseJointData(auto data);
+    void readJointsSensors();
 
     
     ros::Time currentTime;
