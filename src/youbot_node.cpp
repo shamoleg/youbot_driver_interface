@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     // ROS_INFO("all good");
     while(n.ok()){
         ros::spinOnce();
-        // youBot.base.move();
+        youBot.base.move();
         // youBot.computeOODLSensorReadings();
         rate.sleep();
     }

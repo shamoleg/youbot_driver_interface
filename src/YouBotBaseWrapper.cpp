@@ -67,7 +67,7 @@ void YouBotBaseWrapper::CallbackSetBasePosition(const geometry_msgs::Pose2D& msg
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
-            ROS_WARN("Cannot set base velocities: %s", errorMessage.c_str());
+            ROS_WARN("Cannot set base positions: %s", errorMessage.c_str());
         }
     }
     else{
@@ -90,7 +90,7 @@ void YouBotBaseWrapper::CallbackSetJointVelocity(const std_msgs::Float32MultiArr
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
-            ROS_WARN("Cannot set base velocities: %s", errorMessage.c_str());
+            ROS_WARN("Cannot set base joints velocity: %s", errorMessage.c_str());
         }
     }
     else{
@@ -114,7 +114,30 @@ void YouBotBaseWrapper::CallbackSetJointCurrent(const std_msgs::Float32MultiArra
         }
         catch (std::exception& e){
             std::string errorMessage = e.what();
-            ROS_WARN("Cannot set base velocities: %s", errorMessage.c_str());
+            ROS_WARN("Cannot set base joints current: %s", errorMessage.c_str());
+        }
+    }
+    else{
+        ROS_ERROR("No base initialized!");
+    }
+}
+
+void YouBotBaseWrapper::CallbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque){
+    if (youBotConfiguration.hasBase){
+        try{
+            int jointNumber = 0;
+            std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint;
+            JointTorqueSetpoint.resize(4);
+            for(std::vector<float>::const_iterator iter =  msgJointTorque->data.begin(); iter !=  msgJointTorque->data.end(); ++iter){
+                JointTorqueSetpoint[jointNumber].torque = *iter * newton_meter;
+                jointNumber++;
+            }
+
+            this->setBaseJointData(JointTorqueSetpoint);
+        }
+        catch (std::exception& e){
+            std::string errorMessage = e.what();
+            ROS_WARN("Cannot set base joints torque: %s", errorMessage.c_str());
         }
     }
     else{
