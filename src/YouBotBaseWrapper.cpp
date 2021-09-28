@@ -1,6 +1,7 @@
 #include "youbot_driver_interface/YouBotBaseWrapper.h"
 #include <vector>
 #include <sstream>
+#include <tf2/LinearMath/Quaternion.h>
  
 
 namespace youBot
@@ -14,7 +15,6 @@ node(n){
     subscriberJointVelocity = node.subscribe("base/joint/velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
     subscriberJointCurrent = node.subscribe("base/joint/current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
     subscriberJointToque = node.subscribe("base/joint/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
-
     
 }
 
@@ -151,6 +151,48 @@ void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray:
     }
 }
 
+void YouBotBaseWrapper::calculationOdometry(){
+    // try{
+        ros::Time currentTime = ros::Time::now();
+
+        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(false);
+        quantity<si::length> longitudinalPosition;
+        quantity<si::length> transversalPosition;
+        quantity<plane_angle> orientation;
+        youBotBase->getBasePosition(longitudinalPosition, transversalPosition, orientation);
+
+        quantity<si::velocity> longitudinalVelocity;
+        quantity<si::velocity> transversalVelocity;
+        quantity<si::angular_velocity> angularVelocity;   
+        youBotBase->getBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+
+        tf2::Quaternion odometryQuaternion;
+        odometryQuaternion.setRPY(0, 0, orientation.value());
+        odometryQuaternion.normalized();
+
+        odometryTransform.header.stamp = currentTime;
+        odometryTransform.header.frame_id = "youBotOdometryFrameID";
+        odometryTransform.child_frame_id = "youBotOdometryChildFrameID";
+        odometryTransform.transform.translation.x = longitudinalPosition.value();
+        odometryTransform.transform.translation.y = transversalPosition.value();
+        odometryTransform.transform.translation.z = 0.0;
+        odometryTransform.transform.rotation = tf2::toMsg(odometryQuaternion);
+        br.sendTransform(odometryTransform);
+
+        odometryMessage.header.stamp = currentTime;
+        odometryMessage.header.frame_id = "youBotOdometryFrameID";
+        odometryMessage.pose.pose.position.x = longitudinalPosition.value();
+        odometryMessage.pose.pose.position.y = transversalPosition.value();
+        odometryMessage.pose.pose.position.z = 0.0;
+        odometryMessage.pose.pose.orientation = tf2::toMsg(odometryQuaternion);
+        odometryMessage.child_frame_id = "youBotOdometryChildFrameID";
+        odometryMessage.twist.twist.linear.x = longitudinalVelocity.value();
+        odometryMessage.twist.twist.linear.y = transversalVelocity.value();
+        odometryMessage.twist.twist.angular.z = angularVelocity.value();
+
+
+}
+
 int YouBotBaseWrapper::setBaseJointData(auto data) {
 	if (youBotConfiguration.hasBase) { 
 		try {
@@ -166,7 +208,6 @@ int YouBotBaseWrapper::setBaseJointData(auto data) {
 	}
 	return true;
 }
-
 
 
 //TODO: del this

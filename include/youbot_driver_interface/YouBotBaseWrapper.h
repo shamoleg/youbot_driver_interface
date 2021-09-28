@@ -2,16 +2,23 @@
 #include <boost/units/io.hpp>
 
 /* ROS includes */
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Quaternion.h>
+
 #include "youbot_msgs/ReadingsFromSensors.h"
-#include "sensor_msgs/JointState.h"
+
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
-#include "geometry_msgs/Twist.h"
-#include "geometry_msgs/Pose2D.h"
-#include "nav_msgs/Odometry.h"
-#include "std_srvs/Empty.h"
 
-#include "tf/transform_broadcaster.h"
+#include "sensor_msgs/JointState.h"
+
+#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/Twist.h"
+
+#include "nav_msgs/Odometry.h"
+
+#include "std_srvs/Empty.h"
 
 /* OODL includes */
 #include "YouBotConfiguration.h"
@@ -46,13 +53,15 @@ public:
     ros::Subscriber subscriberJointCurrent;
     ros::Subscriber subscriberJointToque;
 
+    void calculationOdometry();
+
     int move();
     void stop();
 
     /* Configuration: */
     YouBotConfiguration youBotConfiguration;
     ros::NodeHandle node;
-    
+    static tf2_ros::TransformBroadcaster br;
     
 
     // std::vector<youbot::JointAngleSetpoint> JointData;
@@ -72,7 +81,7 @@ private:
     nav_msgs::Odometry odometryMessage;
 
     geometry_msgs::TransformStamped odometryTransform;
-    geometry_msgs::Quaternion odometryQuaternion;
+    // geometry_msgs::Quaternion odometryQuaternion;
 
     youbot_msgs::ReadingsFromSensors baseJointStateMessage;
 };
