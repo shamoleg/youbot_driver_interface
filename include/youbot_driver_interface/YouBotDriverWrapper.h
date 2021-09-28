@@ -9,7 +9,6 @@ public:
     ~YouBotDriverWrapper();
 
     YouBotDriverWrapper();
-
     ros::NodeHandle node;
     youBot::YouBotBaseWrapper base;
     // YouBotConfiguration youBotConfiguration;
