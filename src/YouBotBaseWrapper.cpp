@@ -100,6 +100,7 @@ void YouBotBaseWrapper::CallbackSetJointVelocity(const std_msgs::Float32MultiArr
 
 void YouBotBaseWrapper::CallbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent){
     if (youBotConfiguration.hasBase){
+        
         try{
             int jointNumber = 0;
             std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint;
