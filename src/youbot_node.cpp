@@ -26,9 +26,9 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-    if (1){
-        youBot.base.initializeBase(youBot.base.youBotConfiguration.baseConfiguration.baseID);
-    }
+    // if (1){
+    //     youBot.base.initializeBase(youBot.base.youBotConfiguration.baseConfiguration.baseID);
+    // }
 
 
     // ROS_INFO("all good");
