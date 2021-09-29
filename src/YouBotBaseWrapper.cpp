@@ -56,16 +56,19 @@ void YouBotBaseWrapper::dataUpdateAndPublish(){
 
 void YouBotBaseWrapper::calculationOdometry(){
     try{
-        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(false);
+        
         quantity<si::length> longitudinalPosition;
         quantity<si::length> transversalPosition;
         quantity<plane_angle> orientation;
-        youBotBase->getBasePosition(longitudinalPosition, transversalPosition, orientation);
-
+        
         quantity<si::velocity> longitudinalVelocity;
         quantity<si::velocity> transversalVelocity;
-        quantity<si::angular_velocity> angularVelocity;   
+        quantity<si::angular_velocity> angularVelocity;
+
+        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(false);
+        youBotBase->getBasePosition(longitudinalPosition, transversalPosition, orientation);
         youBotBase->getBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(true);
 
         tf2::Quaternion odometryQuaternion;
         odometryQuaternion.setRPY(0, 0, orientation.value());
@@ -106,11 +109,13 @@ void YouBotBaseWrapper::readJointsSensor(){
         std::vector<youbot::JointSensedTorque> jointTorque(youBotNumberOfWheels);
         std::vector<youbot::JointSensedCurrent> jointCurrent(youBotNumberOfWheels);
         std::vector<youbot::JointSensedVelocity> jointVelocity(youBotNumberOfWheels);
-
+        
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->getJointData(jointAngle); 
         youBotBase->getJointData(jointTorque);
         youBotBase->getJointData(jointCurrent);
         youBotBase->getJointData(jointVelocity);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
         currentTime = ros::Time::now();
         jointsSensorDataMessage.header.stamp = currentTime;
@@ -142,7 +147,9 @@ void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& msgB
     quantity<si::angular_velocity> angularVelocity = msgBaseVelocity.angular.z * radian_per_second;
 
     try{
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
@@ -156,7 +163,9 @@ void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& msg
     quantity<plane_angle> orientation = msgBasePosition.theta * radian;
 
     try{
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setBasePosition(longitudinalPosition, transversalPosition, orientation);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
@@ -173,8 +182,9 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
             jointVelocitySetpoint[jointNumber].angularVelocity = *iter *  radian_per_second;
             jointNumber++;
         }
-
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(jointVelocitySetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
@@ -191,8 +201,9 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
             JointCurrentSetpoint[jointNumber].current = *iter * ampere;
             jointNumber++;
         }
-
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(JointCurrentSetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
@@ -209,8 +220,9 @@ void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray:
             JointTorqueSetpoint[jointNumber].torque = *iter * newton_meter;
             jointNumber++;
         }
-
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(JointTorqueSetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();

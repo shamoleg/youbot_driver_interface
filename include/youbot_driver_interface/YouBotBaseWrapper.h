@@ -27,6 +27,7 @@ namespace youBot
 class YouBotBaseWrapper
 {
 public:
+
     youbot::YouBotBase* youBotBase;
 
     YouBotBaseWrapper(ros::NodeHandle n);
@@ -38,6 +39,7 @@ public:
     YouBotConfiguration youBotConfiguration;
 
 private:
+    YouBotBaseWrapper();
 
     void readJointsSensor();
     void calculationOdometry();
