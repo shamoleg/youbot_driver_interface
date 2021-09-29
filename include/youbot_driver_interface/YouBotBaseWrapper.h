@@ -6,44 +6,41 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include "youbot_msgs/ReadingsFromSensors.h"
+#include <std_msgs/Float32MultiArray.h>
 
-#include "std_msgs/Float32MultiArray.h"
-#include "std_msgs/Int32MultiArray.h"
+#include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/Twist.h>
 
-#include "sensor_msgs/JointState.h"
+#include <nav_msgs/Odometry.h>
 
-#include "geometry_msgs/Pose2D.h"
-#include "geometry_msgs/Twist.h"
+#include <std_srvs/Empty.h>
 
-#include "nav_msgs/Odometry.h"
-
-#include "std_srvs/Empty.h"
-
-/* OODL includes */
+/* youbot includes */
 #include "YouBotConfiguration.h"
-#include <youbot_driver/youbot/YouBotBase.hpp>
+
+#include "youbot_driver/youbot/YouBotBase.hpp"
+#include "youbot_msgs/ReadingsFromSensors.h"
 
 namespace youBot
 {
 
-/**
- * @brief Wrapper class to map ROS messages to OODL method calls for the youBot platform.
- */
 class YouBotBaseWrapper
 {
 public:
+    youbot::YouBotBase* youBotBase;
 
     YouBotBaseWrapper(ros::NodeHandle n);
     ~YouBotBaseWrapper();    
     
-    youbot::YouBotBase* youBotBase;
-    
     void initializeBase(std::string baseName);
+    void dataUpdateAndPublish();
+
+    YouBotConfiguration youBotConfiguration;
+
+private:
 
     void readJointsSensor();
     void calculationOdometry();
-    void dataUpdateAndPublish();
 
     void callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity);
     void callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition);
@@ -60,34 +57,12 @@ public:
     ros::Publisher publisherOdometry;
     ros::Publisher publisherJointsSensorData;
 
-
-    int move();
-
-    /* Configuration: */
-    YouBotConfiguration youBotConfiguration;
     ros::NodeHandle node;
-    tf2_ros::TransformBroadcaster br;
-    
-
-    // std::vector<youbot::JointAngleSetpoint> JointData;
-    // std::vector<youbot::JointVelocitySetpoint> JointData;
-    // std::vector<youbot::JointCurrentSetpoint> JointData;
-    // std::vector<youbot::JointTorqueSetpoint> JointData;
-
-private:
-    // ros::Subscriber sub3;
-    // YouBotBaseWrapper(){};
-
-    // int setBaseJointData(auto data);
-    void readJointsSensors();
-
-    
     ros::Time currentTime;
+    tf2_ros::TransformBroadcaster br;
 
     nav_msgs::Odometry odometryMessage;
-
     geometry_msgs::TransformStamped odometryTransform;
-    // geometry_msgs::Quaternion odometryQuaternion;
 
     youbot_msgs::ReadingsFromSensors baseJointStateMessage;
 };
