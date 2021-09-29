@@ -17,8 +17,9 @@ node(n){
     subscriberJointCurrent = node.subscribe("base/joints/current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
     subscriberJointToque = node.subscribe("base/joints/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
 
-    
-    
+    publisherOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
+    publisherJointsSensorData = node.advertise<youbot_msgs::ReadingsFromSensors>("base/joints/data", 1000);
+
 }
 
 YouBotBaseWrapper::~YouBotBaseWrapper()

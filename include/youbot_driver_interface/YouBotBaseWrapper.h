@@ -41,6 +41,10 @@ public:
     
     void initializeBase(std::string baseName);
 
+    void readJointsSensor();
+    void calculationOdometry();
+    void dataUpdateAndPublish();
+
     void callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity);
     void callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition);
     void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity);
@@ -53,11 +57,11 @@ public:
     ros::Subscriber subscriberJointCurrent;
     ros::Subscriber subscriberJointToque;
 
-    void calculationOdometry();
-    void readJointsSensor();
+    ros::Publisher publisherOdometry;
+    ros::Publisher publisherJointsSensorData;
+
 
     int move();
-    void stop();
 
     /* Configuration: */
     YouBotConfiguration youBotConfiguration;
