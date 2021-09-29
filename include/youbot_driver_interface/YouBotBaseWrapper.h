@@ -57,14 +57,14 @@ private:
     ros::Publisher publisherOdometry;
     ros::Publisher publisherJointsSensorData;
 
+    nav_msgs::Odometry odometryMessage;
+    youbot_msgs::ReadingsFromSensors jointsSensorDataMessage;
+
     ros::NodeHandle node;
     ros::Time currentTime;
+
     tf2_ros::TransformBroadcaster br;
-
-    nav_msgs::Odometry odometryMessage;
     geometry_msgs::TransformStamped odometryTransform;
-
-    youbot_msgs::ReadingsFromSensors baseJointStateMessage;
 };
 
 }
