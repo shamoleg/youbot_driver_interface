@@ -9,14 +9,27 @@ namespace youBot
 
 YouBotBaseWrapper::YouBotBaseWrapper(ros::NodeHandle n):
 node(n), config(n){
-    subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
-    subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
-    subscriberJointVelocity = node.subscribe("base/joints/velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
-    subscriberJointCurrent = node.subscribe("base/joints/current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
-    subscriberJointToque = node.subscribe("base/joints/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+    if(config.baseControlMethod == "baseVelocity" || config.baseControlMethod == "all"){
+        subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
+
+    } else if(config.baseControlMethod == "basePosition" || config.baseControlMethod == "all"){
+        subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
+
+    } else if(config.baseControlMethod == "jointVelocity" || config.baseControlMethod == "all"){
+        subscriberJointVelocity = node.subscribe("base/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
+
+    } else if(config.baseControlMethod == "jointCurrent" || config.baseControlMethod == "all"){
+        subscriberJointCurrent = node.subscribe("base/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
+
+    } else if(config.baseControlMethod == "jointsToque" || config.baseControlMethod == "all"){
+        subscriberJointToque = node.subscribe("base/jointsToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+
+    } else{
+        ROS_WARN("No control metod");
+    }
 
     publisherOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
-    publisherJointState = node.advertise<sensor_msgs::JointState>("base/joints/data", 1000);
+    publisherJointState = node.advertise<sensor_msgs::JointState>("base/jointState", 1000);
 
     odometryTransform.header.frame_id = config.ID_odometryFrame;
     odometryTransform.child_frame_id = config.ID_odometryChildFrame;
@@ -139,10 +152,10 @@ void YouBotBaseWrapper::readJointsSensor(){
     }
 }
 
-void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity){
-    quantity<si::velocity> longitudinalVelocity = msgBaseVelocity.linear.x * meter_per_second;
-    quantity<si::velocity> transversalVelocity = msgBaseVelocity.linear.y * meter_per_second;
-    quantity<si::angular_velocity> angularVelocity = msgBaseVelocity.angular.z * radian_per_second;
+void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& massageBaseVelocity){
+    quantity<si::velocity> longitudinalVelocity = massageBaseVelocity.linear.x * meter_per_second;
+    quantity<si::velocity> transversalVelocity = massageBaseVelocity.linear.y * meter_per_second;
+    quantity<si::angular_velocity> angularVelocity = massageBaseVelocity.angular.z * radian_per_second;
 
     try{
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
@@ -155,10 +168,10 @@ void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& msgB
     }
 }
 
-void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition){
-    quantity<si::length> longitudinalPosition = msgBasePosition.x * meter;
-    quantity<si::length> transversalPosition = msgBasePosition.y * meter;
-    quantity<plane_angle> orientation = msgBasePosition.theta * radian;
+void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& massageBasePosition){
+    quantity<si::length> longitudinalPosition = massageBasePosition.x * meter;
+    quantity<si::length> transversalPosition = massageBasePosition.y * meter;
+    quantity<plane_angle> orientation = massageBasePosition.theta * radian;
 
     try{
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
@@ -171,12 +184,12 @@ void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& msg
     }
 }
 
-void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity){
+void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& massageJointVelocity){
     try{
         int jointNumber = 0;
         std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint;
         jointVelocitySetpoint.resize(4);
-        for(std::vector<float>::const_iterator iter = msgJointVelocity->data.begin(); iter != msgJointVelocity->data.end(); ++iter){
+        for(std::vector<float>::const_iterator iter = massageJointVelocity->data.begin(); iter != massageJointVelocity->data.end(); ++iter){
             jointVelocitySetpoint[jointNumber].angularVelocity = *iter *  radian_per_second;
             jointNumber++;
         }
@@ -190,12 +203,12 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
     }
 }
 
-void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent){
+void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& massageJointCurrent){
     try{
         int jointNumber = 0;
         std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint;
         JointCurrentSetpoint.resize(4);
-        for(std::vector<float>::const_iterator iter =  msgJointCurrent->data.begin(); iter !=  msgJointCurrent->data.end(); ++iter){
+        for(std::vector<float>::const_iterator iter =  massageJointCurrent->data.begin(); iter !=  massageJointCurrent->data.end(); ++iter){
             JointCurrentSetpoint[jointNumber].current = *iter * ampere;
             jointNumber++;
         }
@@ -209,12 +222,12 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
     }
 }
 
-void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque){
+void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& massageJointTorque){
     try{
         int jointNumber = 0;
         std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint;
         JointTorqueSetpoint.resize(4);
-        for(std::vector<float>::const_iterator iter =  msgJointTorque->data.begin(); iter !=  msgJointTorque->data.end(); ++iter){
+        for(std::vector<float>::const_iterator iter =  massageJointTorque->data.begin(); iter !=  massageJointTorque->data.end(); ++iter){
             JointTorqueSetpoint[jointNumber].torque = *iter * newton_meter;
             jointNumber++;
         }

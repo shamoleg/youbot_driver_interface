@@ -19,11 +19,9 @@ node(n)
     */
 
     numberOfWheels = 4;
-    ID_wheels.clear();
-    ID_wheels.push_back("wheel_joint_fl"); //wheel #1
-    ID_wheels.push_back("wheel_joint_fr"); //wheel #2
-    ID_wheels.push_back("wheel_joint_bl"); //wheel #3
-    ID_wheels.push_back("wheel_joint_br"); //wheel #4
+    ID_wheels = {"wheel_joint_fl", "wheel_joint_fr", "wheel_joint_bl", "wheel_joint_br"};
+
+    node.param<std::string>("baseControlMethod", baseControlMethod, "all");
 
     node.param("youBotDriverCycleFrequencyInHz", youBotDriverCycleFrequencyInHz, 100.0);
     node.param<std::string>("youBotBaseName", baseName, "youbot-base");

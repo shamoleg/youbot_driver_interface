@@ -12,6 +12,7 @@ public:
     
     bool hasBase;
     std::string baseName;
+    std::string baseControlMethod;
 
     std::string configurationFilePath;
     double youBotDriverCycleFrequencyInHz;
