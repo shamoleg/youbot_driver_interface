@@ -33,10 +33,10 @@ public:
     YouBotBaseWrapper(ros::NodeHandle n);
     ~YouBotBaseWrapper();    
     
-    void initializeBase(std::string baseName);
+    void initializeBase();
     void dataUpdateAndPublish();
 
-    YouBotConfiguration youBotConfiguration;
+    YouBotBaseConfiguration config;
 
 private:
     YouBotBaseWrapper();
@@ -49,7 +49,7 @@ private:
     void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity);
     void callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent);
     void callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque);
-
+    
     ros::Subscriber subscriberBaseVelocity;
     ros::Subscriber subscriberBasePosition;
     ros::Subscriber subscriberJointVelocity;
@@ -58,7 +58,7 @@ private:
 
     ros::Publisher publisherOdometry;
     ros::Publisher publisherJointsSensorData;
-
+    
     nav_msgs::Odometry odometryMessage;
     youbot_msgs::ReadingsFromSensors jointsSensorDataMessage;
 

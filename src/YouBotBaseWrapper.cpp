@@ -8,9 +8,7 @@ namespace youBot
 {
 
 YouBotBaseWrapper::YouBotBaseWrapper(ros::NodeHandle n):
-node(n){
-    this->initializeBase("youbot-base");
-
+node(n), config(n){
     subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
     subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
     subscriberJointVelocity = node.subscribe("base/joints/velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
@@ -24,26 +22,33 @@ node(n){
 YouBotBaseWrapper::~YouBotBaseWrapper()
 {
     delete youBotBase;
-    youBotConfiguration.hasBase = false;
+    config.hasBase = false;
 }
 
 
-void YouBotBaseWrapper::initializeBase(std::string baseName = "youbot-base")
+void YouBotBaseWrapper::initializeBase()
 {
+    try {
+		youbot::EthercatMaster::getInstance("youbot-ethercat.cfg", config.configurationFilePath);
+        ROS_INFO("Ethercat initialize");
+	} catch (std::exception& e)	{
+		ROS_ERROR("No EtherCAT connection:");
+		ROS_FATAL("%s", e.what());
+		return;
+	}
     try{
-        youBotBase = new youbot::YouBotBase(baseName, youBotConfiguration.configurationFilePath);
+        youBotBase = new youbot::YouBotBase(config.baseName, config.configurationFilePath);
         youBotBase->doJointCommutation();
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
         ROS_FATAL("%s", errorMessage.c_str());
-        ROS_ERROR("Base \"%s\" could not be initialized.", baseName.c_str());
-        youBotConfiguration.hasBase = false;
+        ROS_ERROR("Base \"%s\" could not be initialized.", config.baseName.c_str());
+        config.hasBase = false;
         return;
     }
-
     ROS_INFO("Base is initialized.");
-    youBotConfiguration.hasBase = true;
+    config.hasBase = true;
 }
 
 void YouBotBaseWrapper::dataUpdateAndPublish(){
@@ -56,7 +61,6 @@ void YouBotBaseWrapper::dataUpdateAndPublish(){
 
 void YouBotBaseWrapper::calculationOdometry(){
     try{
-        
         quantity<si::length> longitudinalPosition;
         quantity<si::length> transversalPosition;
         quantity<plane_angle> orientation;
@@ -74,20 +78,18 @@ void YouBotBaseWrapper::calculationOdometry(){
         odometryQuaternion.setRPY(0, 0, orientation.value());
         odometryQuaternion.normalized();
 
-        currentTime = ros::Time::now();
-        odometryTransform.header.stamp = currentTime;
-        odometryTransform.header.frame_id = "youBotOdometryFrameID";
-        odometryTransform.child_frame_id = "youBotOdometryChildFrameID";
+        odometryTransform.header.stamp = ros::Time::now();
+        odometryTransform.header.frame_id = config.ID_odometryFrame;
+        odometryTransform.child_frame_id = config.ID_odometryChildFrame;
         odometryTransform.transform.translation.x = longitudinalPosition.value();
         odometryTransform.transform.translation.y = transversalPosition.value();
         odometryTransform.transform.translation.z = 0.0;
         odometryTransform.transform.rotation = tf2::toMsg(odometryQuaternion);
         br.sendTransform(odometryTransform);
 
-        currentTime = ros::Time::now();
-        odometryMessage.header.stamp = currentTime;
-        odometryMessage.header.frame_id = "youBotOdometryFrameID";
-        odometryMessage.child_frame_id = "youBotOdometryChildFrameID";
+        odometryMessage.header.stamp = ros::Time::now();
+        odometryMessage.header.frame_id = config.ID_odometryFrame;
+        odometryMessage.child_frame_id = config.ID_odometryChildFrame;
         odometryMessage.pose.pose.position.x = longitudinalPosition.value();
         odometryMessage.pose.pose.position.y = transversalPosition.value();
         odometryMessage.pose.pose.position.z = 0.0;
@@ -95,7 +97,6 @@ void YouBotBaseWrapper::calculationOdometry(){
         odometryMessage.twist.twist.linear.x = longitudinalVelocity.value();
         odometryMessage.twist.twist.linear.y = transversalVelocity.value();
         odometryMessage.twist.twist.angular.z = angularVelocity.value();
-        youbot::EthercatMaster::getInstance().AutomaticReceiveOn(true);
     } catch (std::exception& e){
         std::string errorMessage = e.what();
         ROS_WARN("Cannot get base odometry: %s", errorMessage.c_str());
@@ -117,8 +118,7 @@ void YouBotBaseWrapper::readJointsSensor(){
         youBotBase->getJointData(jointVelocity);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-        currentTime = ros::Time::now();
-        jointsSensorDataMessage.header.stamp = currentTime;
+        jointsSensorDataMessage.header.stamp = ros::Time::now();
         jointsSensorDataMessage.name.resize(youBotNumberOfWheels);
         jointsSensorDataMessage.torque.resize(youBotNumberOfWheels);
         jointsSensorDataMessage.current.resize(youBotNumberOfWheels);
@@ -127,7 +127,7 @@ void YouBotBaseWrapper::readJointsSensor(){
 
         for (int i = 0; i < youBotNumberOfWheels; ++i)
         {
-            jointsSensorDataMessage.name[i] = youBotConfiguration.baseConfiguration.wheelNames[i];
+            jointsSensorDataMessage.name[i] = config.ID_wheels[i];
             jointsSensorDataMessage.torque[i] = jointTorque[i].torque.value();
             jointsSensorDataMessage.current[i] = jointCurrent[i].current.value();
             jointsSensorDataMessage.position[i] = jointAngle[i].angle.value();

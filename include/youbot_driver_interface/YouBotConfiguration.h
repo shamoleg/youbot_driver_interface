@@ -1,41 +1,28 @@
 #include "ros/ros.h"
-#include <youbot_driver/youbot/YouBotBase.hpp>
+
+#define mkstr2(X) #X
 
 namespace youBot
 {
 
-    class YouBotBaseConfiguration{
-    public:
-        YouBotBaseConfiguration();
-        virtual ~YouBotBaseConfiguration();
+class YouBotBaseConfiguration{
+public:
+    YouBotBaseConfiguration(ros::NodeHandle n);
+    virtual ~YouBotBaseConfiguration();
+    
+    bool hasBase;
+    std::string baseName;
 
-        std::string baseID;
-        std::vector<std::string> wheelNames;
+    std::string configurationFilePath;
+    double youBotDriverCycleFrequencyInHz;
 
-
-        ros::Subscriber baseCommandSubscriber;   
-
-        ros::Publisher baseOdometryPublisher;
-        ros::Publisher baseJointStatePublisher;
-
-        ros::ServiceServer switchOffMotorsService;
-        ros::ServiceServer switchONMotorsService;
-    };
-
-
-    class YouBotConfiguration{
-    public:
-        YouBotConfiguration();
-        virtual ~YouBotConfiguration();
-        
-        bool hasBase;
-        bool hasArms;
-
-        std::string configurationFilePath;
-        double youBotDriverCycleFrequencyInHz;
-
-        YouBotBaseConfiguration baseConfiguration;
-
-    };
+    std::string ID_base;
+    std::string ID_odometryFrame;
+    std::string ID_odometryChildFrame;
+    std::vector<std::string> ID_wheels;
+    
+private:
+    ros::NodeHandle node;
+};
 
 }

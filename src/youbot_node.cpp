@@ -1,34 +1,20 @@
 #include "ros/ros.h"
 #include "youbot_driver_interface/YouBotDriverWrapper.h"
 
-#define mkstr2(X) #X
-
 void configurate(youBot::YouBotDriverWrapper &youBot, ros::NodeHandle &n);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     ros::init(argc, argv, "youbot_driver_interface");
     ros::NodeHandle n;
     youBot::YouBotDriverWrapper youBot(n);
 
-    n.param("youBotDriverCycleFrequencyInHz", youBot.base.youBotConfiguration.youBotDriverCycleFrequencyInHz, 20.0);
-    n.param<std::string>("youBotBaseName", youBot.base.youBotConfiguration.baseConfiguration.baseID, "youbot-base");
-    n.param<std::string>("youBotConfigurationFilePath", youBot.base.youBotConfiguration.configurationFilePath, mkstr2(YOUBOT_CONFIGURATIONS_DIR));
-    ros::Rate rate(youBot.base.youBotConfiguration.youBotDriverCycleFrequencyInHz);
+    ros::Rate rate(youBot.base.config.youBotDriverCycleFrequencyInHz);
 
-
-	try {
-		youbot::EthercatMaster::getInstance("youbot-ethercat.cfg", youBot.base.youBotConfiguration.configurationFilePath);
-        ROS_INFO("Ethercat initialize");
-	} catch (std::exception& e)	{
-		ROS_ERROR("No EtherCAT connection:");
-		ROS_FATAL("%s", e.what());
-		return 0;
-	}
+    youBot.base.initializeBase();
 
     while(n.ok()){
         ros::spinOnce();
-        
+        youBot.base.dataUpdateAndPublish();
         rate.sleep();
     }
     return 0;
