@@ -16,7 +16,22 @@ node(n), config(n){
     subscriberJointToque = node.subscribe("base/joints/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
 
     publisherOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
-    publisherJointsSensorData = node.advertise<youbot_msgs::ReadingsFromSensors>("base/joints/data", 1000);
+    publisherJointState = node.advertise<sensor_msgs::JointState>("base/joints/data", 1000);
+
+    odometryTransform.header.frame_id = config.ID_odometryFrame;
+    odometryTransform.child_frame_id = config.ID_odometryChildFrame;
+
+    odometryMessage.header.frame_id = config.ID_odometryFrame;
+    odometryMessage.child_frame_id = config.ID_odometryChildFrame;
+
+    jointAngle.resize(config.numberOfWheels);
+    jointVelocity.resize(config.numberOfWheels);
+    jointTorque.resize(config.numberOfWheels);
+
+    massageJointState.name.resize(config.numberOfWheels);
+    massageJointState.position.resize(config.numberOfWheels);
+    massageJointState.velocity.resize(config.numberOfWheels);
+    massageJointState.effort.resize(config.numberOfWheels);
 }
 
 YouBotBaseWrapper::~YouBotBaseWrapper()
@@ -56,7 +71,7 @@ void YouBotBaseWrapper::dataUpdateAndPublish(){
     this->readJointsSensor();
 
     publisherOdometry.publish(odometryMessage);
-    publisherJointsSensorData.publish(jointsSensorDataMessage);
+    publisherJointState.publish(massageJointState);
 }
 
 void YouBotBaseWrapper::calculationOdometry(){
@@ -79,8 +94,6 @@ void YouBotBaseWrapper::calculationOdometry(){
         odometryQuaternion.normalized();
 
         odometryTransform.header.stamp = ros::Time::now();
-        odometryTransform.header.frame_id = config.ID_odometryFrame;
-        odometryTransform.child_frame_id = config.ID_odometryChildFrame;
         odometryTransform.transform.translation.x = longitudinalPosition.value();
         odometryTransform.transform.translation.y = transversalPosition.value();
         odometryTransform.transform.translation.z = 0.0;
@@ -88,8 +101,6 @@ void YouBotBaseWrapper::calculationOdometry(){
         br.sendTransform(odometryTransform);
 
         odometryMessage.header.stamp = ros::Time::now();
-        odometryMessage.header.frame_id = config.ID_odometryFrame;
-        odometryMessage.child_frame_id = config.ID_odometryChildFrame;
         odometryMessage.pose.pose.position.x = longitudinalPosition.value();
         odometryMessage.pose.pose.position.y = transversalPosition.value();
         odometryMessage.pose.pose.position.z = 0.0;
@@ -105,36 +116,23 @@ void YouBotBaseWrapper::calculationOdometry(){
 
 void YouBotBaseWrapper::readJointsSensor(){
     try{
-        int youBotNumberOfWheels = 4;
-        std::vector<youbot::JointSensedAngle> jointAngle(youBotNumberOfWheels);
-        std::vector<youbot::JointSensedTorque> jointTorque(youBotNumberOfWheels);
-        std::vector<youbot::JointSensedCurrent> jointCurrent(youBotNumberOfWheels);
-        std::vector<youbot::JointSensedVelocity> jointVelocity(youBotNumberOfWheels);
-        
+        massageJointState.header.stamp = ros::Time::now();
+
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->getJointData(jointAngle); 
         youBotBase->getJointData(jointTorque);
-        youBotBase->getJointData(jointCurrent);
         youBotBase->getJointData(jointVelocity);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-        jointsSensorDataMessage.header.stamp = ros::Time::now();
-        jointsSensorDataMessage.name.resize(youBotNumberOfWheels);
-        jointsSensorDataMessage.torque.resize(youBotNumberOfWheels);
-        jointsSensorDataMessage.current.resize(youBotNumberOfWheels);
-        jointsSensorDataMessage.position.resize(youBotNumberOfWheels);
-        jointsSensorDataMessage.velocity.resize(youBotNumberOfWheels);
-
-        for (int i = 0; i < youBotNumberOfWheels; ++i)
+        for (int wheel = 0; wheel < config.numberOfWheels; ++wheel)
         {
-            jointsSensorDataMessage.name[i] = config.ID_wheels[i];
-            jointsSensorDataMessage.torque[i] = jointTorque[i].torque.value();
-            jointsSensorDataMessage.current[i] = jointCurrent[i].current.value();
-            jointsSensorDataMessage.position[i] = jointAngle[i].angle.value();
-            jointsSensorDataMessage.velocity[i] = jointVelocity[i].angularVelocity.value();
+            massageJointState.name[wheel] = config.ID_wheels[wheel];
+            massageJointState.position[wheel] = jointAngle[wheel].angle.value();
+            massageJointState.velocity[wheel] = jointVelocity[wheel].angularVelocity.value();
+            massageJointState.effort[wheel] = jointTorque[wheel].torque.value();
         }
-        jointsSensorDataMessage.position[0] = -jointsSensorDataMessage.position[0];
-        jointsSensorDataMessage.position[2] = -jointsSensorDataMessage.position[2];
+        massageJointState.position[0] = -massageJointState.position[0];
+        massageJointState.position[2] = -massageJointState.position[2];
     } catch (std::exception& e){
         std::string errorMessage = e.what();
         ROS_WARN("Cannot get base odometry: %s", errorMessage.c_str());

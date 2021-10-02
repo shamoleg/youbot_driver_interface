@@ -16,6 +16,8 @@ public:
     std::string configurationFilePath;
     double youBotDriverCycleFrequencyInHz;
 
+    int numberOfWheels;
+
     std::string ID_base;
     std::string ID_odometryFrame;
     std::string ID_odometryChildFrame;

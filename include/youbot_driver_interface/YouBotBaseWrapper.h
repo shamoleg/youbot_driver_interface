@@ -8,6 +8,8 @@
 
 #include <std_msgs/Float32MultiArray.h>
 
+#include <sensor_msgs/JointState.h>
+
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Twist.h>
 
@@ -19,7 +21,6 @@
 #include "YouBotConfiguration.h"
 
 #include "youbot_driver/youbot/YouBotBase.hpp"
-#include "youbot_msgs/ReadingsFromSensors.h"
 
 namespace youBot
 {
@@ -57,10 +58,15 @@ private:
     ros::Subscriber subscriberJointToque;
 
     ros::Publisher publisherOdometry;
-    ros::Publisher publisherJointsSensorData;
+    ros::Publisher publisherJointState;
     
     nav_msgs::Odometry odometryMessage;
-    youbot_msgs::ReadingsFromSensors jointsSensorDataMessage;
+
+    std::vector<youbot::JointSensedAngle> jointAngle;
+    std::vector<youbot::JointSensedVelocity> jointVelocity;
+    std::vector<youbot::JointSensedTorque> jointTorque;
+
+    sensor_msgs::JointState massageJointState;
 
     ros::NodeHandle node;
     ros::Time currentTime;

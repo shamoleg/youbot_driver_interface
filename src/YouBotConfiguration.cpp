@@ -17,7 +17,8 @@ node(n)
     * 3 ---+--- 4
     *    BACK
     */
-   
+
+    numberOfWheels = 4;
     ID_wheels.clear();
     ID_wheels.push_back("wheel_joint_fl"); //wheel #1
     ID_wheels.push_back("wheel_joint_fr"); //wheel #2
