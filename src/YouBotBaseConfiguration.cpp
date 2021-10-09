@@ -1,5 +1,4 @@
-#include "youbot_driver_interface/YouBotConfiguration.h"
-#include "ros/ros.h"
+#include "YouBotBaseConfiguration.h"
 
 namespace youBot
 {

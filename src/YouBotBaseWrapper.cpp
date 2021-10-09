@@ -12,20 +12,18 @@ node(n), config(n){
     if(config.baseControlMethod == "baseVelocity" || config.baseControlMethod == "all"){
         subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
 
-    } else if(config.baseControlMethod == "basePosition" || config.baseControlMethod == "all"){
+    } if(config.baseControlMethod == "basePosition" || config.baseControlMethod == "all"){
         subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
 
-    } else if(config.baseControlMethod == "jointVelocity" || config.baseControlMethod == "all"){
-        subscriberJointVelocity = node.subscribe("base/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
+    } if(config.baseControlMethod == "jointVelocity" || config.baseControlMethod == "all"){
+        subscriberJointVelocity = node.subscribe("base/joint/velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
 
-    } else if(config.baseControlMethod == "jointCurrent" || config.baseControlMethod == "all"){
-        subscriberJointCurrent = node.subscribe("base/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
+    } if(config.baseControlMethod == "jointCurrent" || config.baseControlMethod == "all"){
+        subscriberJointCurrent = node.subscribe("base/joint/current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
 
-    } else if(config.baseControlMethod == "jointsToque" || config.baseControlMethod == "all"){
-        subscriberJointToque = node.subscribe("base/jointsToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+    } if(config.baseControlMethod == "jointsToque" || config.baseControlMethod == "all"){
+        subscriberJointToque = node.subscribe("base/joint/toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
 
-    } else{
-        ROS_WARN("No control metod");
     }
 
     publisherOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
@@ -56,14 +54,7 @@ YouBotBaseWrapper::~YouBotBaseWrapper()
 
 void YouBotBaseWrapper::initializeBase()
 {
-    try {
-		youbot::EthercatMaster::getInstance("youbot-ethercat.cfg", config.configurationFilePath);
-        ROS_INFO("Ethercat initialize");
-	} catch (std::exception& e)	{
-		ROS_ERROR("No EtherCAT connection:");
-		ROS_FATAL("%s", e.what());
-		return;
-	}
+
     try{
         youBotBase = new youbot::YouBotBase(config.baseName, config.configurationFilePath);
         youBotBase->doJointCommutation();
@@ -129,16 +120,14 @@ void YouBotBaseWrapper::calculationOdometry(){
 
 void YouBotBaseWrapper::readJointsSensor(){
     try{
-        massageJointState.header.stamp = ros::Time::now();
-
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        massageJointState.header.stamp = ros::Time::now();
         youBotBase->getJointData(jointAngle); 
         youBotBase->getJointData(jointTorque);
         youBotBase->getJointData(jointVelocity);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-        for (int wheel = 0; wheel < config.numberOfWheels; ++wheel)
-        {
+        for (int wheel = 0; wheel < config.numberOfWheels; ++wheel){
             massageJointState.name[wheel] = config.ID_wheels[wheel];
             massageJointState.position[wheel] = jointAngle[wheel].angle.value();
             massageJointState.velocity[wheel] = jointVelocity[wheel].angularVelocity.value();
@@ -153,9 +142,9 @@ void YouBotBaseWrapper::readJointsSensor(){
 }
 
 void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& massageBaseVelocity){
-    quantity<si::velocity> longitudinalVelocity = massageBaseVelocity.linear.x * meter_per_second;
-    quantity<si::velocity> transversalVelocity = massageBaseVelocity.linear.y * meter_per_second;
-    quantity<si::angular_velocity> angularVelocity = massageBaseVelocity.angular.z * radian_per_second;
+    const quantity<si::velocity> longitudinalVelocity = massageBaseVelocity.linear.x * meter_per_second;
+    const quantity<si::velocity> transversalVelocity = massageBaseVelocity.linear.y * meter_per_second;
+    const quantity<si::angular_velocity> angularVelocity = massageBaseVelocity.angular.z * radian_per_second;
 
     try{
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
@@ -169,9 +158,9 @@ void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& mass
 }
 
 void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& massageBasePosition){
-    quantity<si::length> longitudinalPosition = massageBasePosition.x * meter;
-    quantity<si::length> transversalPosition = massageBasePosition.y * meter;
-    quantity<plane_angle> orientation = massageBasePosition.theta * radian;
+    const quantity<si::length> longitudinalPosition = massageBasePosition.x * meter;
+    const quantity<si::length> transversalPosition = massageBasePosition.y * meter;
+    const quantity<plane_angle> orientation = massageBasePosition.theta * radian;
 
     try{
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
@@ -186,9 +175,10 @@ void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& mas
 
 void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& massageJointVelocity){
     try{
-        int jointNumber = 0;
         std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint;
         jointVelocitySetpoint.resize(4);
+
+        int jointNumber = 0;
         for(std::vector<float>::const_iterator iter = massageJointVelocity->data.begin(); iter != massageJointVelocity->data.end(); ++iter){
             jointVelocitySetpoint[jointNumber].angularVelocity = *iter *  radian_per_second;
             jointNumber++;
@@ -205,9 +195,10 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
 
 void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& massageJointCurrent){
     try{
-        int jointNumber = 0;
         std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint;
         JointCurrentSetpoint.resize(4);
+
+        int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointCurrent->data.begin(); iter !=  massageJointCurrent->data.end(); ++iter){
             JointCurrentSetpoint[jointNumber].current = *iter * ampere;
             jointNumber++;
@@ -224,9 +215,10 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
 
 void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& massageJointTorque){
     try{
-        int jointNumber = 0;
         std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint;
         JointTorqueSetpoint.resize(4);
+
+        int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointTorque->data.begin(); iter !=  massageJointTorque->data.end(); ++iter){
             JointTorqueSetpoint[jointNumber].torque = *iter * newton_meter;
             jointNumber++;

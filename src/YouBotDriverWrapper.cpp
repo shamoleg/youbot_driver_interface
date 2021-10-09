@@ -3,10 +3,8 @@
 namespace youBot{
     
 YouBotDriverWrapper::YouBotDriverWrapper(ros::NodeHandle n)
-:node(n), base(n){
+:node(n), base(n), arm(n){
 }
 
-YouBotDriverWrapper::~YouBotDriverWrapper(){
-}
 
 }

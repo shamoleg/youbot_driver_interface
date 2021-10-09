@@ -7,6 +7,8 @@
 	<!-- Default name values --> 
 	<param name="youBotBaseName" type="str" value="youbot-base"/>
 	<param name="youBotArmName1" type="str" value="youbot-manipulator"/>
+	<param name="baseControlMethod" type="str" value="all"/>
+	<param name="youBotDriverCycleFrequencyInHz" value="60"/>
 	<!-- <param name="ID_OdometryChildFrame" type="str" value="base_footprint"/> -->
 	
 

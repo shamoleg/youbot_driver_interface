@@ -10,11 +10,23 @@ int main(int argc, char **argv){
 
     ros::Rate rate(youBot.base.config.youBotDriverCycleFrequencyInHz);
 
+    try {
+		youbot::EthercatMaster::getInstance("youbot-ethercat.cfg", youBot.base.config.configurationFilePath);
+        ROS_INFO("Ethercat initialize");
+	} catch (std::exception& e)	{
+		ROS_ERROR("No EtherCAT connection:");
+		ROS_FATAL("%s", e.what());
+		return 1;
+	}
+    
+
     youBot.base.initializeBase();
+    youBot.arm.initializeArm();
 
     while(n.ok()){
         ros::spinOnce();
         youBot.base.dataUpdateAndPublish();
+        youBot.arm.readJointsSensor();
         rate.sleep();
     }
     return 0;

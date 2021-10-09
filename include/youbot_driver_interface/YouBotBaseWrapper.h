@@ -18,7 +18,7 @@
 #include <std_srvs/Empty.h>
 
 /* youbot includes */
-#include "YouBotConfiguration.h"
+#include "YouBotBaseConfiguration.h"
 
 #include "youbot_driver/youbot/YouBotBase.hpp"
 
