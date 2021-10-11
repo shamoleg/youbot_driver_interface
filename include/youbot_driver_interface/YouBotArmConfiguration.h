@@ -16,6 +16,9 @@ public:
 
     std::string armName;
     std::string configurationFilePath;
+    
+    int numberOfJoints;
+    int numberOfGripper;
 
     std::vector<std::string> ID_jointNames;
     std::vector<std::string> ID_gripperFingerNames;

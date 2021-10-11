@@ -41,18 +41,26 @@ void YouBotArmWrapper::readJointsSensor(){
         youBotArm->getJointData(jointAngle);
         youBotArm->getJointData(jointVelocity);
         youBotArm->getJointData(jointTorque);
+        youBotArm->getArmGripper().getGripperBar1().getData(gripperBar1Position);
+        youBotArm->getArmGripper().getGripperBar2().getData(gripperBar2Position);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-
-            
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < config.numberOfJoints; ++i)
         {
             massageJointState.name[i] = config.ID_jointNames[i];
             massageJointState.position[i] = jointAngle[i].angle.value();
             massageJointState.velocity[i] = jointVelocity[i].angularVelocity.value();
             massageJointState.effort[i] = jointTorque[i].torque.value();
         }
+
+        massageJointState.name[config.numberOfJoints + 0] = config.ID_gripperFingerNames[0];
+        massageJointState.position[config.numberOfJoints + 0] = gripperBar1Position.barPosition.value();
+
+        massageJointState.name[config.numberOfJoints + 1] = config.ID_gripperFingerNames[1];
+        massageJointState.position[config.numberOfJoints + 1] = gripperBar2Position.barPosition.value();
+
         publisherJointState.publish(massageJointState);
+
     }
     
     catch (std::exception& e)

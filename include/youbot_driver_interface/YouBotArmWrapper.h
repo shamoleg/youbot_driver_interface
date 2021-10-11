@@ -27,10 +27,12 @@ private:
 
     ros::Publisher publisherJointState;
 
-
     YouBotArmConfiguration config;
 
     youbot::YouBotManipulator* youBotArm;
+
+    youbot::GripperSensedBarPosition gripperBar1Position;
+    youbot::GripperSensedBarPosition gripperBar2Position;
 
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
