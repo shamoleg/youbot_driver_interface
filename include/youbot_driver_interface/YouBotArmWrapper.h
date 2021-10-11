@@ -34,7 +34,6 @@ private:
 
     ros::NodeHandle node;
 
-
     ros::Subscriber subscriberJointPosition;
     ros::Subscriber subscriberJointVelocity;
     ros::Subscriber subscriberJointTorque;

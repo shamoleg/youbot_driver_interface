@@ -142,6 +142,11 @@ add_executable(youbot_driver_interface
     src/YouBotDriverWrapper.cpp
     # src/joint_state_observer_oodl.cpp
 )
+
+add_executable(youbot_arm_test 
+    src/test.cpp 
+)
+target_link_libraries(youbot_arm_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${youbot_driver_LIBRARIES})
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -159,6 +164,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_dependencies(youbot_driver_interface ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(youbot_arm_test ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

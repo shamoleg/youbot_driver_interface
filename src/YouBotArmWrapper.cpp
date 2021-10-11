@@ -5,9 +5,12 @@ namespace youBot{
 YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
 :node(n), config(n){
 
-    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/data", 1000);
-
+    subscriberJointPosition = node.subscribe("arm/jointPosition", 1, &YouBotArmWrapper::callbackSetJointPosition, this);
+    subscriberJointVelocity = node.subscribe("arm/jointVelocity", 1, &YouBotArmWrapper::callbackSetJointVelocity, this);
+    subscriberJointTorque = node.subscribe("arm/jointTorque", 1, &YouBotArmWrapper::callbackSetJointTorque, this);
     subscriberGripperPosition = node.subscribe("arm/gripperPosition", 1, &YouBotArmWrapper::callbackSetGripperPosition, this);
+
+    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/data", 1000);
 
     massageJointState.name.resize(config.numberOfJoints + config.numberOfGripper);
     massageJointState.position.resize(config.numberOfJoints + config.numberOfGripper);
@@ -68,13 +71,13 @@ void YouBotArmWrapper::readJointsSensor(){
 
 void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition){
     try{
-        std::vector<youbot::JointAngleSetpoint> jointAngleSetpoint;
-        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
-            jointAngleSetpoint[jointNumber].angle = massegeJointPosition->positions[jointNumber].value * radian;
-        }
+        youbot::JointAngleSetpoint jointPositionsSetpoint;
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
-        youBotArm->setJointData(jointAngleSetpoint);
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointPositionsSetpoint = massegeJointPosition->positions[jointNumber].value * radians;
+            youBotArm->getArmJoint(jointNumber + 1).setData(jointPositionsSetpoint);
+        }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
     } catch(std::exception& e){
@@ -85,13 +88,13 @@ void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPosit
 
 void YouBotArmWrapper::callbackSetJointVelocity(const brics_actuator::JointVelocitiesConstPtr& massegeJointVelocity){
     try{
-        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint;
-        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
-            jointVelocitySetpoint[jointNumber].angularVelocity =  massegeJointVelocity->velocities[jointNumber].value * radian_per_second;
-        }
+        youbot::JointVelocitySetpoint  jointVelocitySetpoint;
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
-        youBotArm->setJointData(jointVelocitySetpoint);
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointVelocitySetpoint =  massegeJointVelocity->velocities[jointNumber].value * radian_per_second;
+            youBotArm->getArmJoint(jointNumber + 1).setData(jointVelocitySetpoint);
+        }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
     } catch(std::exception& e){
@@ -102,13 +105,13 @@ void YouBotArmWrapper::callbackSetJointVelocity(const brics_actuator::JointVeloc
 
 void YouBotArmWrapper::callbackSetJointTorque(const brics_actuator::JointTorquesConstPtr& massegeJointTorque){
     try{
-        std::vector<youbot::JointTorqueSetpoint> jointTorqueSetpoint;
-        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
-            jointTorqueSetpoint[jointNumber].torque = massegeJointTorque->torques[jointNumber].value * newton_meters;
-        }
-
+        youbot::JointTorqueSetpoint  jointTorqueSetpoint;
+        
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
-        youBotArm->setJointData(jointTorqueSetpoint);
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointTorqueSetpoint = massegeJointTorque->torques[jointNumber].value * newton_meters;
+            youBotArm->getArmJoint(jointNumber + 1).setData(jointTorqueSetpoint);
+        }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
     } catch(std::exception& e){
