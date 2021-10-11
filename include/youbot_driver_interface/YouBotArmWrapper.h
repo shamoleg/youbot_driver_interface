@@ -3,6 +3,9 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
+
+#include "brics_actuator/JointPositions.h"
+#include "brics_actuator/JointVelocities.h"
 #include "YouBotArmConfiguration.h"
 
 
@@ -16,16 +19,16 @@ public:
     void initializeArm();
     void readJointsSensor();
 
-
-
     ~YouBotArmWrapper();
 private:
-    YouBotArmWrapper();
+
+    void callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition);
 
     ros::NodeHandle node;
-    
 
     ros::Publisher publisherJointState;
+
+    ros::Subscriber subscriberGripperPosition;
 
     YouBotArmConfiguration config;
 

@@ -7,6 +7,7 @@ YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
 
     publisherJointState = node.advertise<sensor_msgs::JointState>("arm/data", 1000);
 
+    subscriberGripperPosition = node.subscribe("arm/gripperPosition", 1, &YouBotArmWrapper::callbackSetGripperPosition, this);
 }
 
 YouBotArmWrapper::~YouBotArmWrapper(){
@@ -21,7 +22,7 @@ void YouBotArmWrapper::initializeArm(){
         youBotArm->calibrateGripper();
     }
     catch (std::exception& e){
-        std::string errorMessage = e.what();
+        const std::string errorMessage = e.what();
         ROS_FATAL("%s", errorMessage.c_str());
         ROS_ERROR("Arm \"%s\" could not be initialized.", config.armName.c_str());
     }
@@ -65,11 +66,30 @@ void YouBotArmWrapper::readJointsSensor(){
     
     catch (std::exception& e)
     {
-        std::string errorMessage = e.what();
+        const std::string errorMessage = e.what();
         ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
     }
 
 
+}
+
+void YouBotArmWrapper::callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition){
+    try{
+        youbot::GripperBarPositionSetPoint rightGripperFingerPosition;
+        youbot::GripperBarPositionSetPoint leftGripperFingerPosition;
+
+        rightGripperFingerPosition.barPosition = massegeGripperPosition->positions[0].value * meter;
+        leftGripperFingerPosition.barPosition = massegeGripperPosition->positions[0].value * meter;
+
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+            youBotArm->getArmGripper().getGripperBar1().setData(rightGripperFingerPosition);
+            youBotArm->getArmGripper().getGripperBar2().setData(leftGripperFingerPosition);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+
+    } catch (std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
 }
 
 }
