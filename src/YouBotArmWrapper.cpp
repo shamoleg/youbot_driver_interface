@@ -34,7 +34,6 @@ void YouBotArmWrapper::initializeArm(){
 }
 
 void YouBotArmWrapper::readJointsSensor(){
-
     try {
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         massageJointState.header.stamp = ros::Time::now();
@@ -65,8 +64,6 @@ void YouBotArmWrapper::readJointsSensor(){
         const std::string errorMessage = e.what();
         ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
     }
-
-
 }
 
 void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition){
@@ -78,6 +75,40 @@ void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPosit
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotArm->setJointData(jointAngleSetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+
+    } catch(std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
+}
+
+void YouBotArmWrapper::callbackSetJointVelocity(const brics_actuator::JointVelocitiesConstPtr& massegeJointVelocity){
+    try{
+        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint;
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointVelocitySetpoint[jointNumber].angularVelocity =  massegeJointVelocity->velocities[jointNumber].value * radian_per_second;
+        }
+
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        youBotArm->setJointData(jointVelocitySetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+
+    } catch(std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
+}
+
+void YouBotArmWrapper::callbackSetJointTorque(const brics_actuator::JointTorquesConstPtr& massegeJointTorque){
+    try{
+        std::vector<youbot::JointTorqueSetpoint> jointTorqueSetpoint;
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointTorqueSetpoint[jointNumber].torque = massegeJointTorque->torques[jointNumber].value * newton_meters;
+        }
+
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        youBotArm->setJointData(jointTorqueSetpoint);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
     } catch(std::exception& e){

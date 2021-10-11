@@ -5,6 +5,7 @@
 
 #include "brics_actuator/JointPositions.h"
 #include "brics_actuator/JointVelocities.h"
+#include "brics_actuator/JointTorques.h"
 
 #include "youbot_driver/youbot/YouBotGripper.hpp"
 #include "youbot_driver/youbot/YouBotJoint.hpp"
@@ -26,14 +27,20 @@ private:
 
 
     void callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition);
+    void callbackSetJointVelocity(const brics_actuator::JointVelocitiesConstPtr& massegeJointVelocity);
+    void callbackSetJointTorque(const brics_actuator::JointTorquesConstPtr& massegeJointTorque);
     void callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition);
 
 
     ros::NodeHandle node;
 
-    ros::Publisher publisherJointState;
 
+    ros::Subscriber subscriberJointPosition;
+    ros::Subscriber subscriberJointVelocity;
+    ros::Subscriber subscriberJointTorque;
     ros::Subscriber subscriberGripperPosition;
+
+    ros::Publisher publisherJointState;
 
     YouBotArmConfiguration config;
 
