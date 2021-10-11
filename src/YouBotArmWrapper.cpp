@@ -41,7 +41,7 @@ void YouBotArmWrapper::readJointsSensor(){
         youBotArm->getJointData(jointAngle);
         youBotArm->getJointData(jointVelocity);
         youBotArm->getJointData(jointTorque);
-        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
 
             

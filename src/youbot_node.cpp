@@ -8,18 +8,14 @@ int main(int argc, char **argv){
     ros::NodeHandle n;
     youBot::YouBotDriverWrapper youBot(n);
 
-    ros::Rate rate(youBot.base.config.youBotDriverCycleFrequencyInHz);
-
+    ros::Rate rate(youBot.base.config.youBotDriverCycleFrequencyInHz);    
     try {
 		youbot::EthercatMaster::getInstance("youbot-ethercat.cfg", youBot.base.config.configurationFilePath);
         ROS_INFO("Ethercat initialize");
 	} catch (std::exception& e)	{
 		ROS_ERROR("No EtherCAT connection:");
 		ROS_FATAL("%s", e.what());
-		return 1;
 	}
-    
-
     youBot.base.initializeBase();
     youBot.arm.initializeArm();
 

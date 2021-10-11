@@ -54,7 +54,6 @@ YouBotBaseWrapper::~YouBotBaseWrapper()
 
 void YouBotBaseWrapper::initializeBase()
 {
-
     try{
         youBotBase = new youbot::YouBotBase(config.baseName, config.configurationFilePath);
         youBotBase->doJointCommutation();
@@ -175,13 +174,12 @@ void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& mas
 
 void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& massageJointVelocity){
     try{
-        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint;
-        jointVelocitySetpoint.resize(4);
+        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint(config.numberOfWheels);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter = massageJointVelocity->data.begin(); iter != massageJointVelocity->data.end(); ++iter){
             jointVelocitySetpoint[jointNumber].angularVelocity = *iter *  radian_per_second;
-            jointNumber++;
+            ++jointNumber;
         }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(jointVelocitySetpoint);
@@ -195,13 +193,12 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
 
 void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& massageJointCurrent){
     try{
-        std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint;
-        JointCurrentSetpoint.resize(4);
+        std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint(config.numberOfWheels);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointCurrent->data.begin(); iter !=  massageJointCurrent->data.end(); ++iter){
             JointCurrentSetpoint[jointNumber].current = *iter * ampere;
-            jointNumber++;
+            ++jointNumber;
         }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(JointCurrentSetpoint);
@@ -215,13 +212,12 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
 
 void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& massageJointTorque){
     try{
-        std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint;
-        JointTorqueSetpoint.resize(4);
+        std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint(config.numberOfWheels);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointTorque->data.begin(); iter !=  massageJointTorque->data.end(); ++iter){
             JointTorqueSetpoint[jointNumber].torque = *iter * newton_meter;
-            jointNumber++;
+            ++jointNumber;
         }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         youBotBase->setJointData(JointTorqueSetpoint);

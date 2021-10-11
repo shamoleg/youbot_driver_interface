@@ -61,12 +61,11 @@ private:
     ros::Publisher publisherJointState;
     
     nav_msgs::Odometry odometryMessage;
+    sensor_msgs::JointState massageJointState;
 
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
     std::vector<youbot::JointSensedTorque> jointTorque;
-
-    sensor_msgs::JointState massageJointState;
 
     ros::NodeHandle node;
     ros::Time currentTime;
