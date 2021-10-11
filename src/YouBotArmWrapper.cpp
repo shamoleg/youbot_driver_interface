@@ -8,6 +8,11 @@ YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
     publisherJointState = node.advertise<sensor_msgs::JointState>("arm/data", 1000);
 
     subscriberGripperPosition = node.subscribe("arm/gripperPosition", 1, &YouBotArmWrapper::callbackSetGripperPosition, this);
+
+    massageJointState.name.resize(config.numberOfJoints + config.numberOfGripper);
+    massageJointState.position.resize(config.numberOfJoints + config.numberOfGripper);
+    massageJointState.velocity.resize(config.numberOfJoints + config.numberOfGripper);
+    massageJointState.effort.resize(config.numberOfJoints + config.numberOfGripper);
 }
 
 YouBotArmWrapper::~YouBotArmWrapper(){
@@ -20,8 +25,7 @@ void YouBotArmWrapper::initializeArm(){
         youBotArm->doJointCommutation();
         youBotArm->calibrateManipulator();
         youBotArm->calibrateGripper();
-    }
-    catch (std::exception& e){
+    } catch (std::exception& e){
         const std::string errorMessage = e.what();
         ROS_FATAL("%s", errorMessage.c_str());
         ROS_ERROR("Arm \"%s\" could not be initialized.", config.armName.c_str());
@@ -32,11 +36,6 @@ void YouBotArmWrapper::initializeArm(){
 void YouBotArmWrapper::readJointsSensor(){
 
     try {
-        massageJointState.name.resize(7);
-        massageJointState.position.resize(7);
-        massageJointState.velocity.resize(7);
-        massageJointState.effort.resize(7);
-
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         massageJointState.header.stamp = ros::Time::now();
         youBotArm->getJointData(jointAngle);
@@ -62,10 +61,7 @@ void YouBotArmWrapper::readJointsSensor(){
 
         publisherJointState.publish(massageJointState);
 
-    }
-    
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e){
         const std::string errorMessage = e.what();
         ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
     }
@@ -79,7 +75,7 @@ void YouBotArmWrapper::callbackSetGripperPosition(const brics_actuator::JointPos
         youbot::GripperBarPositionSetPoint leftGripperFingerPosition;
 
         rightGripperFingerPosition.barPosition = massegeGripperPosition->positions[0].value * meter;
-        leftGripperFingerPosition.barPosition = massegeGripperPosition->positions[0].value * meter;
+        leftGripperFingerPosition.barPosition = massegeGripperPosition->positions[1].value * meter;
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
             youBotArm->getArmGripper().getGripperBar1().setData(rightGripperFingerPosition);
