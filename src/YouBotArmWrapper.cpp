@@ -69,6 +69,23 @@ void YouBotArmWrapper::readJointsSensor(){
 
 }
 
+void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition){
+    try{
+        std::vector<youbot::JointAngleSetpoint> jointAngleSetpoint;
+        for(int jointNumber = 0; jointNumber < config.numberOfJoints; ++jointNumber){
+            jointAngleSetpoint[jointNumber].angle = massegeJointPosition->positions[jointNumber].value * radian;
+        }
+
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        youBotArm->setJointData(jointAngleSetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+
+    } catch(std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
+}
+
 void YouBotArmWrapper::callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition){
     try{
         youbot::GripperBarPositionSetPoint rightGripperFingerPosition;

@@ -3,9 +3,11 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
-
 #include "brics_actuator/JointPositions.h"
 #include "brics_actuator/JointVelocities.h"
+
+#include "youbot_driver/youbot/YouBotGripper.hpp"
+#include "youbot_driver/youbot/YouBotJoint.hpp"
 #include "YouBotArmConfiguration.h"
 
 
@@ -22,7 +24,10 @@ public:
     ~YouBotArmWrapper();
 private:
 
+
+    void callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition);
     void callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition);
+
 
     ros::NodeHandle node;
 
