@@ -20,7 +20,11 @@ node(n)
     numberOfWheels = 4;
     ID_wheels = {"wheel_joint_fl", "wheel_joint_fr", "wheel_joint_bl", "wheel_joint_br"};
 
-    node.param<std::string>("baseControlMethod", baseControlMethod, "all");
+    node.param<bool>("baseVelocityControl", baseVelocityControl, true);
+    node.param<bool>("basePositionControl", basePositionControl, false);
+    node.param<bool>("baseJointVelocityControl", baseJointVelocityControl, false);
+    node.param<bool>("baseJointCurrentControl", baseJointCurrentControl, false);
+    node.param<bool>("baseJointToqueControl", baseJointToqueControl, false);
 
     node.param("youBotDriverCycleFrequencyInHz", youBotDriverCycleFrequencyInHz, 100.0);
     node.param<std::string>("youBotBaseName", baseName, "youbot-base");

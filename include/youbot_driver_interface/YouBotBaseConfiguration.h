@@ -11,8 +11,14 @@ public:
     virtual ~YouBotBaseConfiguration();
     
     bool hasBase;
+
+    bool baseVelocityControl;
+    bool basePositionControl;
+    bool baseJointVelocityControl;
+    bool baseJointCurrentControl;
+    bool baseJointToqueControl;
+
     std::string baseName;
-    std::string baseControlMethod;
 
     std::string configurationFilePath;
     double youBotDriverCycleFrequencyInHz;
