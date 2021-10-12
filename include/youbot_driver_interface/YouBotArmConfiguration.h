@@ -13,8 +13,11 @@ public:
     YouBotArmConfiguration(ros::NodeHandle n);
     ~YouBotArmConfiguration();
 
-
     std::string armName;
+
+    bool armJointPositionControl;
+    bool armJointVelocityControl;
+    bool armJointToqueControl;
     std::string configurationFilePath;
     
     int numberOfJoints;

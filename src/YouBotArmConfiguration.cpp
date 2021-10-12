@@ -4,6 +4,11 @@ namespace youBot{
 
 YouBotArmConfiguration::YouBotArmConfiguration(ros::NodeHandle n)
 :node(n){
+ 
+    node.param<bool>("armJointPositionControl", armJointPositionControl, false);
+    node.param<bool>("armJointVelocityControl", armJointVelocityControl, true);
+    node.param<bool>("armJointToqueControl", armJointToqueControl, false);
+    
     node.param<std::string>("youBotConfigurationFilePath", configurationFilePath, mkstr2(YOUBOT_CONFIGURATIONS_DIR));
     node.param<std::string>("youBotArmName", armName, "youbot-manipulator");
 

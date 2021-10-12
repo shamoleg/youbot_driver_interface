@@ -10,18 +10,18 @@ namespace youBot
 YouBotBaseWrapper::YouBotBaseWrapper(ros::NodeHandle n):
 node(n), config(n){
     if(config.baseVelocityControl){
-        subscriberBaseVelocity = node.subscribe("youBotBase/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
+        subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
     } if(config.basePositionControl){
-        subscriberBasePosition = node.subscribe("youBotBase/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
+        subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
     } if(config.baseJointVelocityControl){
-        subscriberJointVelocity = node.subscribe("youBotBase/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
+        subscriberJointVelocity = node.subscribe("base/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
     } if(config.baseJointCurrentControl){
-        subscriberJointCurrent = node.subscribe("youBotBase/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
+        subscriberJointCurrent = node.subscribe("base/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
     } if(config.baseJointToqueControl){ 
-        subscriberJointToque = node.subscribe("youBotBase/jointToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+        subscriberJointToque = node.subscribe("base/jointToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
     }
 
-    publisherOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
+    publisherOdometry = node.advertise<nav_msgs::Odometry>("odom", 1000);
     publisherJointState = node.advertise<sensor_msgs::JointState>("base/jointState", 1000);
 
     odometryTransform.header.frame_id = config.ID_odometryFrame;

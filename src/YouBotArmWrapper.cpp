@@ -5,12 +5,17 @@ namespace youBot{
 YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
 :node(n), config(n){
 
-    subscriberJointPosition = node.subscribe("arm/jointPosition", 1, &YouBotArmWrapper::callbackSetJointPosition, this);
-    subscriberJointVelocity = node.subscribe("arm/jointVelocity", 1, &YouBotArmWrapper::callbackSetJointVelocity, this);
-    subscriberJointTorque = node.subscribe("arm/jointTorque", 1, &YouBotArmWrapper::callbackSetJointTorque, this);
+    if(1){
+        subscriberJointPosition = node.subscribe("arm/jointPosition", 1, &YouBotArmWrapper::callbackSetJointPosition, this);
+    } if(1){
+        subscriberJointVelocity = node.subscribe("arm/jointVelocity", 1, &YouBotArmWrapper::callbackSetJointVelocity, this);
+    } if(1){
+        subscriberJointTorque = node.subscribe("arm/jointTorque", 1, &YouBotArmWrapper::callbackSetJointTorque, this);
+    }
+    
     subscriberGripperPosition = node.subscribe("arm/gripperPosition", 1, &YouBotArmWrapper::callbackSetGripperPosition, this);
 
-    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/data", 1000);
+    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/jointState", 1000);
 
     massageJointState.name.resize(config.numberOfJoints + config.numberOfGripper);
     massageJointState.position.resize(config.numberOfJoints + config.numberOfGripper);
