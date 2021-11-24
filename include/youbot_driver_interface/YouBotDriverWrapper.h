@@ -12,7 +12,6 @@ public:
     YouBotDriverWrapper();
     ros::NodeHandle node;
     youBot::YouBotBaseWrapper base;
-    youBot::YouBotArmWrapper arm;
 };
 
 }

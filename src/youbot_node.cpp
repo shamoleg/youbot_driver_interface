@@ -17,12 +17,10 @@ int main(int argc, char **argv){
 		ROS_FATAL("%s", e.what());
 	}
     youBot.base.initializeBase();
-    youBot.arm.initializeArm();
 
     while(n.ok()){
         ros::spinOnce();
         youBot.base.dataUpdateAndPublish();
-        youBot.arm.readJointsSensor();
         rate.sleep();
     }
     return 0;

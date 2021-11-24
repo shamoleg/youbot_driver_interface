@@ -1,4 +1,5 @@
 #include "YouBotArmWrapper.h"
+#include <robot_state_publisher/robot_state_publisher.h>
 
 namespace youBot{
 
@@ -42,22 +43,65 @@ void YouBotArmWrapper::initializeArm(){
 }
 
 void YouBotArmWrapper::readJointsSensor(){
+    std::vector<geometry_msgs::TransformStamped> transformStamped(config.numberOfJoints);
+
     try {
+        
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
-        massageJointState.header.stamp = ros::Time::now();
         youBotArm->getJointData(jointAngle);
         youBotArm->getJointData(jointVelocity);
         youBotArm->getJointData(jointTorque);
-        youBotArm->getArmGripper().getGripperBar1().getData(gripperBar1Position);
-        youBotArm->getArmGripper().getGripperBar2().getData(gripperBar2Position);
+        // youBotArm->getArmGripper().getGripperBar1().getData(gripperBar1Position);
+        // youBotArm->getArmGripper().getGripperBar2().getData(gripperBar2Position);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
+        massageJointState.header.stamp = ros::Time::now();
+
+        std::vector<tf2::Quaternion> s(5);
+        s[0].setRPY(0, 0, 170 * M_PI / 180  - jointAngle[0].angle.value());
+        s[1].setRPY(0, -65 * M_PI / 180 + jointAngle[1].angle.value(), 0);
+        s[2].setRPY(0, 146 * M_PI / 180 + jointAngle[2].angle.value(), 0);
+        s[3].setRPY(0, -102.5 * M_PI / 180 + jointAngle[3].angle.value(), 0);
+        s[4].setRPY(0, 0, 167.5 * M_PI / 180 - jointAngle[4].angle.value());
+
+        transformStamped[0].transform.translation.x = 0.024;
+        transformStamped[0].transform.translation.y = 0.0;
+        transformStamped[0].transform.translation.z = 0.096;
+
+        transformStamped[1].transform.translation.x = 0.033;
+        transformStamped[1].transform.translation.y = 0.0;
+        transformStamped[1].transform.translation.z = 0.019;
+
+        transformStamped[2].transform.translation.x = 0.000;
+        transformStamped[2].transform.translation.y = 0.0;
+        transformStamped[2].transform.translation.z = 0.155;
+
+        transformStamped[3].transform.translation.x = 0.0;
+        transformStamped[3].transform.translation.y = 0.0;
+        transformStamped[3].transform.translation.z = 0.135;
+
+        transformStamped[4].transform.translation.x = -0.002;
+        transformStamped[4].transform.translation.y = 0.0;
+        transformStamped[4].transform.translation.z = 0.130;
+        
         for (int i = 0; i < config.numberOfJoints; ++i)
         {
             massageJointState.name[i] = config.ID_jointNames[i];
             massageJointState.position[i] = jointAngle[i].angle.value();
             massageJointState.velocity[i] = jointVelocity[i].angularVelocity.value();
             massageJointState.effort[i] = jointTorque[i].torque.value();
+
+            transformStamped[i].header.stamp = ros::Time::now();
+            transformStamped[i].header.frame_id = config.ID_jointNames[i];
+            transformStamped[i].child_frame_id = config.ID_jointNames[i+1];
+
+            transformStamped[i].transform.rotation.x = s[i].x();
+            transformStamped[i].transform.rotation.y = s[i].y();
+            transformStamped[i].transform.rotation.z = s[i].z();
+            transformStamped[i].transform.rotation.w = s[i].w();
+
+            
+
         }
 
         massageJointState.name[config.numberOfJoints + 0] = config.ID_gripperFingerNames[0];
@@ -66,6 +110,9 @@ void YouBotArmWrapper::readJointsSensor(){
         massageJointState.name[config.numberOfJoints + 1] = config.ID_gripperFingerNames[1];
         massageJointState.position[config.numberOfJoints + 1] = gripperBar2Position.barPosition.value();
 
+        
+
+        tfBroadcaster.sendTransform(transformStamped);
         publisherJointState.publish(massageJointState);
 
     } catch (std::exception& e){
