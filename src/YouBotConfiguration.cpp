@@ -29,7 +29,7 @@ YouBotConfiguration::YouBotConfiguration(ros::NodeHandle n)
     //set default values for control types and load values from param
     this->baseControlType = {{"baseVelocityControl",true},
                              {"basePositionControl",false},
-                             {"baseJointVelocityControl",true},
+                             {"baseJointVelocityControl", false},
                              {"baseJointCurrentControl",false},
                              {"baseJointToqueControl",false},
     };

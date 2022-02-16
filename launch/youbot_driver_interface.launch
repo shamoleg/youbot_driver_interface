@@ -7,9 +7,7 @@
 	<!-- Default name values --> 
 	<param name="youBotBaseName" type="str" value="youbot-base"/>
 	<param name="youBotArmName1" type="str" value="youbot-manipulator"/>
-	<param name="baseControlMethod" type="str" value="all"/>
-	<param name="youBotDriverCycleFrequencyInHz" value="360"/>
-	<param name="publish_frequency" value="360"/>
+	<param name="driverCycleFrequencyInHz" value="30"/>
 	
 	<rosparam file="$(find youbot_driver_interface)/param/youbot_configuration.yaml" command="load" />
 	<!-- <param name="ID_OdometryChildFrame" type="str" value="base_footprint"/> -->

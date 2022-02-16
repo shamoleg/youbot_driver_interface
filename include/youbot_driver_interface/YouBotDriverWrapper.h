@@ -8,10 +8,13 @@ namespace youBot{
 
 class YouBotDriverWrapper{
 
+
 public:
     explicit YouBotDriverWrapper(ros::NodeHandle n);
     youBot::YouBotConfiguration* config;
     youBot::YouBotBaseWrapper base;
+
+    void getEthercatInstance();
 };
 
 }
