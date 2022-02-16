@@ -1,12 +1,12 @@
 #include "ros/ros.h"
 #include "youbot_driver_interface/YouBotDriverWrapper.h"
-#include "youbot_driver_interface/YouBotConfiguration.h"
 
 void configurate(youBot::YouBotDriverWrapper &youBot, ros::NodeHandle &n);
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "youbot_driver_interface");
     ros::NodeHandle n;
+
     youBot::YouBotDriverWrapper youBot(n);
 
     ros::Rate rate(youBot.config->driverCycleFrequencyInHz);
@@ -17,7 +17,7 @@ int main(int argc, char **argv){
 		ROS_ERROR("No EtherCAT connection:");
 		ROS_FATAL("%s", e.what());
 	}
-    youBot.base.initializeBase();
+    youBot.base.initialize();
 
     while(n.ok()){
         ros::spinOnce();

@@ -34,16 +34,16 @@ public:
     youBot::YouBotConfiguration* config;
 
 
-    YouBotBaseWrapper(const ros::NodeHandle& n);
+    explicit YouBotBaseWrapper(const ros::NodeHandle& n);
     ~YouBotBaseWrapper();
     
-    void initializeBase();
+    void initialize();
     void dataUpdateAndPublish();
 
 
 private:
-    void readJointsSensor();
-    void calculationOdometry();
+    sensor_msgs::JointState getJointState() const;
+    nav_msgs::Odometry getOdometry() const;
 
     void callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity) const;
     void callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition) const;
@@ -59,19 +59,24 @@ private:
 
     ros::Publisher pubOdometry;
     ros::Publisher pubJointState;
-    
-    nav_msgs::Odometry odometryMessage;
-    sensor_msgs::JointState massageJointState;
-
-    std::vector<youbot::JointSensedAngle> jointAngle;
-    std::vector<youbot::JointSensedVelocity> jointVelocity;
-    std::vector<youbot::JointSensedTorque> jointTorque;
 
     ros::NodeHandle node;
     ros::Time currentTime;
 
-    tf2_ros::TransformBroadcaster br;
-    geometry_msgs::TransformStamped odometryTransform;
+
+//    TODO create method from this comment code
+//
+//    odometryTransform.header.frame_id = config.ID_odometryFrame;
+//    odometryTransform.child_frame_id = config.ID_odometryChildFrame;
+//    odometryTransform.header.stamp = ros::Time::now();
+//    odometryTransform.transform.translation.x = longitudinalPosition.value();
+//    odometryTransform.transform.translation.y = transversalPosition.value();
+//    odometryTransform.transform.translation.z = 0.0;
+//    odometryTransform.transform.rotation = tf2::toMsg(odometryQuaternion);
+//    br.sendTransform(odometryTransform);
+//    tf2_ros::TransformBroadcaster br;
+//    geometry_msgs::TransformStamped odometryTransform;
+
 };
 
 }
