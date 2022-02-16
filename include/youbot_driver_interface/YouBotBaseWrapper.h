@@ -45,20 +45,20 @@ private:
     void readJointsSensor();
     void calculationOdometry();
 
-    void callbackSetBaseVelocity(const geometry_msgs::Twist& massageBaseVelocity);
-    void callbackSetBasePosition(const geometry_msgs::Pose2D& massageBasePosition);
-    void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& massageJointVelocity);
-    void callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& massageJointCurrent);
-    void callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& massageJointTorque);
+    void callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity) const;
+    void callbackSetBasePosition(const geometry_msgs::Pose2D& msgBasePosition) const;
+    void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity) const;
+    void callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent) const;
+    void callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque) const;
     
-    ros::Subscriber subscriberBaseVelocity;
-    ros::Subscriber subscriberBasePosition;
-    ros::Subscriber subscriberJointVelocity;
-    ros::Subscriber subscriberJointCurrent;
-    ros::Subscriber subscriberJointToque;
+    ros::Subscriber subBaseVelocity;
+    ros::Subscriber subBasePosition;
+    ros::Subscriber subJointVelocity;
+    ros::Subscriber subJointCurrent;
+    ros::Subscriber subJointToque;
 
-    ros::Publisher publisherOdometry;
-    ros::Publisher publisherJointState;
+    ros::Publisher pubOdometry;
+    ros::Publisher pubJointState;
     
     nav_msgs::Odometry odometryMessage;
     sensor_msgs::JointState massageJointState;

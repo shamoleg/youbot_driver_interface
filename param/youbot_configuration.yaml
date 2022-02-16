@@ -1,5 +1,6 @@
 controlType:
-  armJointPositionControl: true
+  armJointPositionControl: false
+  baseJointVelocityControl: true
   armJointPositionControl2: true
   df1: true
   df3: true

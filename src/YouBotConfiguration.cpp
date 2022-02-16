@@ -4,7 +4,7 @@
 #include "YouBotConfiguration.h"
 namespace youBot{
 
-YouBotConfiguration * YouBotConfiguration::config = nullptr;
+YouBotConfiguration *YouBotConfiguration::config = nullptr;
 
 YouBotConfiguration *YouBotConfiguration::GetInstance(ros::NodeHandle node){
     if(config == nullptr){
@@ -29,7 +29,7 @@ YouBotConfiguration::YouBotConfiguration(ros::NodeHandle n)
     //set default values for control types and load values from param
     this->baseControlType = {{"baseVelocityControl",true},
                              {"basePositionControl",false},
-                             {"baseJointVelocityControl",false},
+                             {"baseJointVelocityControl",true},
                              {"baseJointCurrentControl",false},
                              {"baseJointToqueControl",false},
     };
@@ -40,7 +40,6 @@ YouBotConfiguration::YouBotConfiguration(ros::NodeHandle n)
 
     this->node.param<std::map<std::string, bool>>("baseControlType", this->baseControlType, this->baseControlType);
     this->node.param<std::map<std::string, bool>>("armControlType", this->armControlType, this->armControlType);
-
 
 }
 
