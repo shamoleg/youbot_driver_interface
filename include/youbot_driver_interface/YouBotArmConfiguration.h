@@ -1,6 +1,4 @@
 #include <string>
-
-
 #include <ros/ros.h>
 
 #define mkstr2(X) #X

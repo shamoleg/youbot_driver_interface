@@ -2,6 +2,7 @@
 #include <boost/units/io.hpp>
 
 /* ROS includes */
+#include "YouBotConfiguration.h"
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -30,18 +31,17 @@ class YouBotBaseWrapper
 public:
 
     youbot::YouBotBase* youBotBase;
+    youBot::YouBotConfiguration* config;
 
-    YouBotBaseWrapper(ros::NodeHandle n);
-    ~YouBotBaseWrapper();    
+
+    YouBotBaseWrapper(const ros::NodeHandle& n);
+    ~YouBotBaseWrapper();
     
     void initializeBase();
     void dataUpdateAndPublish();
 
-    YouBotBaseConfiguration config;
 
 private:
-    YouBotBaseWrapper();
-
     void readJointsSensor();
     void calculationOdometry();
 

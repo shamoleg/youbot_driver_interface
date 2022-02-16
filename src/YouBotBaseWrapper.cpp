@@ -7,61 +7,67 @@
 namespace youBot
 {
 
-YouBotBaseWrapper::YouBotBaseWrapper(ros::NodeHandle n):
-node(n), config(n){
-    if(config.baseVelocityControl){
+
+YouBotBaseWrapper::YouBotBaseWrapper(const ros::NodeHandle& n):
+    node(n){
+
+    config = YouBotConfiguration::GetInstance(node);
+
+    if(config->baseControlType["baseVelocityControl"]){
         subscriberBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
-    } if(config.basePositionControl){
+    }
+    if(config->baseControlType["basePositionControl"]){
         subscriberBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
-    } if(config.baseJointVelocityControl){
+    }
+    if(config->baseControlType["baseJointVelocityControl"]){
         subscriberJointVelocity = node.subscribe("base/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
-    } if(config.baseJointCurrentControl){
+    }
+    if(config->baseControlType["baseJointCurrentControl"]){
         subscriberJointCurrent = node.subscribe("base/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
-    } if(config.baseJointToqueControl){ 
+    }
+    if(config->baseControlType["baseJointToqueControl"]){
         subscriberJointToque = node.subscribe("base/jointToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
     }
 
     publisherOdometry = node.advertise<nav_msgs::Odometry>("odom", 1000);
     publisherJointState = node.advertise<sensor_msgs::JointState>("base/jointState", 1000);
 
-    odometryTransform.header.frame_id = config.ID_odometryFrame;
-    odometryTransform.child_frame_id = config.ID_odometryChildFrame;
+//    odometryTransform.header.frame_id = config.ID_odometryFrame;
+//    odometryTransform.child_frame_id = config.ID_odometryChildFrame;
+//
+//    odometryMessage.header.frame_id = config.ID_odometryFrame;
+//    odometryMessage.child_frame_id = config.ID_odometryChildFrame;
 
-    odometryMessage.header.frame_id = config.ID_odometryFrame;
-    odometryMessage.child_frame_id = config.ID_odometryChildFrame;
+    jointAngle.resize(config->numOfWheels);
+    jointVelocity.resize(config->numOfWheels);
+    jointTorque.resize(config->numOfWheels);
 
-    jointAngle.resize(config.numberOfWheels);
-    jointVelocity.resize(config.numberOfWheels);
-    jointTorque.resize(config.numberOfWheels);
-
-    massageJointState.name.resize(config.numberOfWheels);
-    massageJointState.position.resize(config.numberOfWheels);
-    massageJointState.velocity.resize(config.numberOfWheels);
-    massageJointState.effort.resize(config.numberOfWheels);
+    massageJointState.name.resize(config->numOfWheels);
+    massageJointState.position.resize(config->numOfWheels);
+    massageJointState.velocity.resize(config->numOfWheels);
+    massageJointState.effort.resize(config->numOfWheels);
 }
 
 YouBotBaseWrapper::~YouBotBaseWrapper()
 {
     delete youBotBase;
-    config.hasBase = false;
 }
 
 
 void YouBotBaseWrapper::initializeBase()
 {
     try{
-        youBotBase = new youbot::YouBotBase(config.baseName, config.configurationFilePath);
+        youBotBase = new youbot::YouBotBase(config->baseName, config->configFilePath);
         youBotBase->doJointCommutation();
     }
     catch (std::exception& e){
         std::string errorMessage = e.what();
         ROS_FATAL("%s", errorMessage.c_str());
-        ROS_ERROR("Base \"%s\" could not be initialized.", config.baseName.c_str());
-        config.hasBase = false;
+        ROS_ERROR("Base \"%s\" could not be initialized.", config->baseName.c_str());
+
         return;
     }
     ROS_INFO("Base is initialized.");
-    config.hasBase = true;
 }
 
 void YouBotBaseWrapper::dataUpdateAndPublish(){
@@ -121,8 +127,8 @@ void YouBotBaseWrapper::readJointsSensor(){
         youBotBase->getJointData(jointVelocity);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-        for (int wheel = 0; wheel < config.numberOfWheels; ++wheel){
-            massageJointState.name[wheel] = config.ID_wheels[wheel];
+        for (int wheel = 0; wheel < 4; ++wheel){
+            massageJointState.name[wheel] = "temp";
             massageJointState.position[wheel] = jointAngle[wheel].angle.value();
             massageJointState.velocity[wheel] = jointVelocity[wheel].angularVelocity.value();
             massageJointState.effort[wheel] = jointTorque[wheel].torque.value();
@@ -169,7 +175,7 @@ void YouBotBaseWrapper::callbackSetBasePosition(const geometry_msgs::Pose2D& mas
 
 void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& massageJointVelocity){
     try{
-        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint(config.numberOfWheels);
+        std::vector<youbot::JointVelocitySetpoint> jointVelocitySetpoint(4);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter = massageJointVelocity->data.begin(); iter != massageJointVelocity->data.end(); ++iter){
@@ -187,7 +193,7 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
 
 void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& massageJointCurrent){
     try{
-        std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint(config.numberOfWheels);
+        std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint(config->numOfWheels);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointCurrent->data.begin(); iter !=  massageJointCurrent->data.end(); ++iter){
@@ -205,7 +211,7 @@ void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArra
 
 void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& massageJointTorque){
     try{
-        std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint(config.numberOfWheels);
+        std::vector<youbot::JointTorqueSetpoint> JointTorqueSetpoint(config->numOfWheels);
 
         int jointNumber = 0;
         for(std::vector<float>::const_iterator iter =  massageJointTorque->data.begin(); iter !=  massageJointTorque->data.end(); ++iter){
@@ -220,5 +226,6 @@ void YouBotBaseWrapper::callbackSetJointToque(const std_msgs::Float32MultiArray:
         ROS_WARN("Cannot set base joints torque: %s", errorMessage.c_str());
     }
 }
+
 
 }

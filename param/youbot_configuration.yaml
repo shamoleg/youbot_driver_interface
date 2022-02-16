@@ -1,0 +1,5 @@
+controlType:
+  armJointPositionControl: true
+  armJointPositionControl2: true
+  df1: true
+  df3: true
