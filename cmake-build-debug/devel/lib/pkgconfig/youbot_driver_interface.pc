@@ -1,8 +1,0 @@
-prefix=/home/sham/catkin_ws/src/youbot_driver_interface/cmake-build-debug/devel
-
-Name: youbot_driver_interface
-Description: Description of youbot_driver_interface
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: youbot_driver roscpp
