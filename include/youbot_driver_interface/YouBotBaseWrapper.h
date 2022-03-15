@@ -58,22 +58,9 @@ private:
     ros::Publisher pubOdometry;
     ros::Publisher pubJointState;
 
+    tf2_ros::TransformBroadcaster* br;
     ros::NodeHandle node;
-    ros::Time currentTime;
 
-
-//    TODO create method from this comment code
-//
-//    odometryTransform.header.frame_id = config.ID_odometryFrame;
-//    odometryTransform.child_frame_id = config.ID_odometryChildFrame;
-//    odometryTransform.header.stamp = ros::Time::now();
-//    odometryTransform.transform.translation.x = longitudinalPosition.value();
-//    odometryTransform.transform.translation.y = transversalPosition.value();
-//    odometryTransform.transform.translation.z = 0.0;
-//    odometryTransform.transform.rotation = tf2::toMsg(odometryQuaternion);
-//    br.sendTransform(odometryTransform);
-//    tf2_ros::TransformBroadcaster br;
-//    geometry_msgs::TransformStamped odometryTransform;
 
 };
 

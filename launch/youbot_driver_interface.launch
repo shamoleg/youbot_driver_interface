@@ -10,15 +10,9 @@
 	<param name="driverCycleFrequencyInHz" value="30"/>
 	
 	<rosparam file="$(find youbot_driver_interface)/param/youbot_configuration.yaml" command="load" />
-	<!-- <param name="ID_OdometryChildFrame" type="str" value="base_footprint"/> -->
-	
 
-	<!-- Start the driver. NOTE: Every joint topic is mapped to armName/joint_states -->
-	<!-- <remap from="base/joint_states" to="/joint_states"/>  -->
-	<node name="youbot_driver" pkg="youbot_driver_interface" type="youbot_driver_interface" output="screen">
-		
-	</node>
-	<!-- upoad URDF model to the parameter server  
+	<node name="youbot_driver" pkg="youbot_driver_interface" type="youbot_driver_interface" output="screen"/>
+
 	<param name="robot_description" command="$(find xacro)/xacro.py '$(find youbot_description)/robots/youbot.urdf.xacro'"/>
-  --> 
+
 </launch>

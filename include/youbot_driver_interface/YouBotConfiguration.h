@@ -30,6 +30,8 @@ public:
     std::vector<std::string> name_jointsArm;
     std::vector<std::string> name_gripperFingerNames;
 
+    std::string name_odomFrame;
+    std::string name_odomChildFrame;
 
     YouBotConfiguration(YouBotConfiguration &other) = delete;
     void operator=(const YouBotConfiguration&) = delete;

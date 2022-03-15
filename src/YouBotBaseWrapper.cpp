@@ -11,6 +11,7 @@ YouBotBaseWrapper::YouBotBaseWrapper(const ros::NodeHandle& n):
     node(n){
 
     config = YouBotConfiguration::GetInstance(node);
+    br = new tf2_ros::TransformBroadcaster;
 
     if(config->baseControlType["baseVelocityControl"]){
         subBaseVelocity = node.subscribe("base/velocity", 1000, &YouBotBaseWrapper::callbackSetBaseVelocity, this);
@@ -36,6 +37,7 @@ YouBotBaseWrapper::YouBotBaseWrapper(const ros::NodeHandle& n):
 YouBotBaseWrapper::~YouBotBaseWrapper()
 {
     delete youBotBase;
+    delete br;
 }
 
 
@@ -62,41 +64,53 @@ void YouBotBaseWrapper::dataUpdateAndPublish()
 
 nav_msgs::Odometry YouBotBaseWrapper::getOdometry() const
 {
-    quantity<si::length> longitudinalPosition;
-    quantity<si::length> transversalPosition;
+    quantity<si::length> positionX;
+    quantity<si::length> positionY;
     quantity<plane_angle> orientation;
 
-    quantity<si::velocity> longitudinalVelocity;
-    quantity<si::velocity> transversalVelocity;
-    quantity<si::angular_velocity> angularVelocity;
+    quantity<si::velocity> velocityX;
+    quantity<si::velocity> velocityY;
+    quantity<si::angular_velocity> velocityAngularZ;
+
+    const ros::Time currentTime = ros::Time::now();
 
     youbot::EthercatMaster::getInstance().AutomaticReceiveOn(false);
-        youBotBase->getBasePosition(longitudinalPosition, transversalPosition, orientation);
-        youBotBase->getBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+    youBotBase->getBasePosition(positionX, positionY, orientation);
+    youBotBase->getBaseVelocity(velocityX, velocityY, velocityAngularZ);
     youbot::EthercatMaster::getInstance().AutomaticReceiveOn(true);
 
-    tf2::Quaternion odometryQuaternion;
-    odometryQuaternion.setRPY(0, 0, orientation.value());
-    odometryQuaternion.normalized();
+    tf2::Quaternion quaternionOdom;
+    quaternionOdom.setRPY(0, 0, orientation.value());
+    quaternionOdom.normalized();
 
-    nav_msgs::Odometry msgOdometry;
-//    msgOdometry.header.frame_id = config.ID_odometryFrame;
-//    msgOdometry.child_frame_id = config.ID_odometryChildFrame;
+    geometry_msgs::TransformStamped transformOdom;
+    transformOdom.header.frame_id = config->name_odomFrame;
+    transformOdom.child_frame_id = config->name_odomChildFrame;
+    transformOdom.header.stamp = currentTime;
+    transformOdom.transform.translation.x = positionX.value();
+    transformOdom.transform.translation.y = positionY.value();
+    transformOdom.transform.translation.z = 0.0;
+    transformOdom.transform.rotation = tf2::toMsg(quaternionOdom);
+    br->sendTransform(transformOdom);
 
-    msgOdometry.header.stamp = ros::Time::now();
-    msgOdometry.pose.pose.position.x = longitudinalPosition.value();
-    msgOdometry.pose.pose.position.y = transversalPosition.value();
-    msgOdometry.pose.pose.position.z = 0.0;
-    msgOdometry.pose.pose.orientation = tf2::toMsg(odometryQuaternion);
-    msgOdometry.twist.twist.linear.x = longitudinalVelocity.value();
-    msgOdometry.twist.twist.linear.y = transversalVelocity.value();
-    msgOdometry.twist.twist.angular.z = angularVelocity.value();
-    return msgOdometry;
+
+    nav_msgs::Odometry msgOdom;
+    msgOdom.header.frame_id = config->name_odomFrame;
+    msgOdom.child_frame_id = config->name_odomChildFrame;
+    msgOdom.header.stamp = currentTime;
+    msgOdom.pose.pose.position.x = positionX.value();
+    msgOdom.pose.pose.position.y = positionY.value();
+    msgOdom.pose.pose.position.z = 0.0;
+    msgOdom.pose.pose.orientation = tf2::toMsg(quaternionOdom);
+    msgOdom.twist.twist.linear.x = velocityX.value();
+    msgOdom.twist.twist.linear.y = velocityY.value();
+    msgOdom.twist.twist.angular.z = velocityAngularZ.value();
+    return msgOdom;
 }
 
 sensor_msgs::JointState YouBotBaseWrapper::getJointState() const
 {
-    sensor_msgs::JointState massageJointState;
+    sensor_msgs::JointState msgJointState;
 
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
@@ -108,25 +122,25 @@ sensor_msgs::JointState YouBotBaseWrapper::getJointState() const
 
     try{
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
-            massageJointState.header.stamp = ros::Time::now();
+        msgJointState.header.stamp = ros::Time::now();
             youBotBase->getJointData(jointAngle);
             youBotBase->getJointData(jointTorque);
             youBotBase->getJointData(jointVelocity);
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
         for (int wheel = 0; wheel < config->numOfWheels; ++wheel){
-            massageJointState.name.emplace_back("temp");
-            massageJointState.position.emplace_back(jointAngle[wheel].angle.value());
-            massageJointState.velocity.emplace_back(jointVelocity[wheel].angularVelocity.value());
-            massageJointState.effort.emplace_back(jointTorque[wheel].torque.value());
+            msgJointState.name.emplace_back("temp");
+            msgJointState.position.emplace_back(jointAngle[wheel].angle.value());
+            msgJointState.velocity.emplace_back(jointVelocity[wheel].angularVelocity.value());
+            msgJointState.effort.emplace_back(jointTorque[wheel].torque.value());
         }
-        massageJointState.position[0] = -massageJointState.position[0];
-        massageJointState.position[2] = -massageJointState.position[2];
+        msgJointState.position[0] = -msgJointState.position[0];
+        msgJointState.position[2] = -msgJointState.position[2];
     } catch (const std::exception& e){
         const std::string errorMessage = e.what();
         ROS_WARN("Cannot get base joint State: %s", errorMessage.c_str());
     }
-    return massageJointState;
+    return msgJointState;
 }
 
 void YouBotBaseWrapper::callbackSetBaseVelocity(const geometry_msgs::Twist& msgBaseVelocity) const
