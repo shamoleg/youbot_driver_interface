@@ -14,7 +14,7 @@
 
 #include "youbot_driver/youbot/YouBotGripper.hpp"
 #include "youbot_driver/youbot/YouBotJoint.hpp"
-#include "YouBotArmConfiguration.h"
+#include "YouBotConfiguration.h"
 
 #include <geometry_msgs/TransformStamped.h>
 #include <cstdio>
@@ -28,8 +28,8 @@ class YouBotArmWrapper
 public:
     YouBotArmWrapper(ros::NodeHandle n);
 
-    void initializeArm();
-    void readJointsSensor();
+    void initialize();
+    void dataUpdateAndPublish();
 
     ~YouBotArmWrapper();
 private:
@@ -52,18 +52,19 @@ private:
 
     tf2_ros::TransformBroadcaster tfBroadcaster;
 
-    YouBotArmConfiguration config;
+    YouBotConfiguration* config;
 
     youbot::YouBotManipulator* youBotArm;
 
     youbot::GripperSensedBarPosition gripperBar1Position;
     youbot::GripperSensedBarPosition gripperBar2Position;
+    int gripperCycleCounter;
 
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
     std::vector<youbot::JointSensedTorque> jointTorque;
 
-    sensor_msgs::JointState massageJointState;
+
     
     
 

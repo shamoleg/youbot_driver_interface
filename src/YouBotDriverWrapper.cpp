@@ -3,7 +3,7 @@
 namespace youBot{
     
 YouBotDriverWrapper::YouBotDriverWrapper(ros::NodeHandle n)
-: base(n){
+: base(n), arm(n){
     config = YouBotConfiguration::GetInstance(n);
     this->getEthercatInstance();
 }
@@ -18,5 +18,15 @@ void YouBotDriverWrapper::getEthercatInstance()
         ROS_FATAL("%s", e.what());
     }
 }
+
+void YouBotDriverWrapper::initialize(){
+    base.initialize();
+    arm.initialize();
+}
+void YouBotDriverWrapper::update(){
+    base.dataUpdateAndPublish();
+    arm.dataUpdateAndPublish();
+};
+
 
 }

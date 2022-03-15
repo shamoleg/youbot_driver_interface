@@ -12,9 +12,11 @@ int main(int argc, char **argv){
     ros::Rate rate(youBot.config->driverCycleFrequencyInHz);
 
     youBot.base.initialize();
+    youBot.arm.initialize();
     while(n.ok()){
         ros::spinOnce();
         youBot.base.dataUpdateAndPublish();
+        youBot.arm.dataUpdateAndPublish();
         rate.sleep();
     }
     return 0;

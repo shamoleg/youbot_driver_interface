@@ -13,8 +13,12 @@ public:
     explicit YouBotDriverWrapper(ros::NodeHandle n);
     youBot::YouBotConfiguration* config;
     youBot::YouBotBaseWrapper base;
+    youBot::YouBotArmWrapper arm;
 
     void getEthercatInstance();
+    void initialize();
+    void update();
+
 };
 
 }

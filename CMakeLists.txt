@@ -135,10 +135,8 @@ catkin_package(
 # add_executable(${PROJECT_NAME}_node src/youbot_driver_interface_node.cpp)
 add_executable(youbot_driver_interface 
     src/youbot_node.cpp
-    src/YouBotBaseConfiguration.cpp
-    src/YouBotBaseWrapper.cpp
-    src/YouBotArmConfiguration.cpp
-    src/YouBotArmWrapper.cpp
+		src/YouBotBaseWrapper.cpp
+        src/YouBotArmWrapper.cpp
     src/YouBotDriverWrapper.cpp
 	src/YouBotConfiguration.cpp
          )

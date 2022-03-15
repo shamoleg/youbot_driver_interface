@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/sham/catkin_ws/src/youbot_driver_interface/cmake-build-debug/devel/setup.sh

@@ -26,6 +26,11 @@ public:
     std::string armName;
     std::map<std::string, bool> armControlType;
 
+    std::vector<std::string> name_wheels;
+    std::vector<std::string> name_jointsArm;
+    std::vector<std::string> name_gripperFingerNames;
+
+
     YouBotConfiguration(YouBotConfiguration &other) = delete;
     void operator=(const YouBotConfiguration&) = delete;
 
@@ -35,7 +40,6 @@ protected:
 
 private:
     ros::NodeHandle node;
-
 };
 }
 
