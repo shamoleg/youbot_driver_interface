@@ -31,7 +31,7 @@ YouBotConfiguration::YouBotConfiguration(ros::NodeHandle n)
     this->name_jointsArm = {"arm_joint_1", "arm_joint_2", "arm_joint_3", "arm_joint_4", "arm_joint_5", "arm_joint_6"};
     this->name_gripperFingerNames = {"gripper_finger_joint_l", "gripper_finger_joint_r"};
     this->name_odomFrame = "odom";
-    this->name_odomChildFrame = "base_footprint";
+    this->name_odomChildFrame = "base_link";
 
     //set default values for control types and load values from param
     this->baseControlType = {{"baseVelocityControl",true},

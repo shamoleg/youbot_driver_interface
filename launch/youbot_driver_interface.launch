@@ -13,6 +13,10 @@
 
 	<node name="youbot_driver" pkg="youbot_driver_interface" type="youbot_driver_interface" output="screen"/>
 
-	<param name="robot_description" command="$(find xacro)/xacro.py '$(find youbot_description)/robots/youbot.urdf.xacro'"/>
+	<param name="robot_description" command="$(find xacro)/xacro $(find youbot_description)/robots/youbot_tpu_real.urdf.xacro" />
+
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+		<remap from="joint_states" to="arm/joint_states" />
+	</node>
 
 </launch>

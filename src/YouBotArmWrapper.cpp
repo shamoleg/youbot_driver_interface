@@ -9,16 +9,15 @@ YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
     config = YouBotConfiguration::GetInstance(node);
 
     if(config->armControlType["armJointPositionControl"]){
-        subscriberJointPosition = node.subscribe("arm/jointPosition", 1, &YouBotArmWrapper::callbackSetJointPosition, this);
+        subscriberJointPosition = node.subscribe("arm/joint_position", 1, &YouBotArmWrapper::callbackSetJointPosition, this);
     } if(config->armControlType["armJointVelocityControl"]){
-        subscriberJointVelocity = node.subscribe("arm/jointVelocity", 1, &YouBotArmWrapper::callbackSetJointVelocity, this);
+        subscriberJointVelocity = node.subscribe("arm/joint_velocity", 1, &YouBotArmWrapper::callbackSetJointVelocity, this);
     } if(config->armControlType["armJointToqueControl"]){
-        subscriberJointTorque = node.subscribe("arm/jointTorque", 1, &YouBotArmWrapper::callbackSetJointTorque, this);
+        subscriberJointTorque = node.subscribe("arm/joint_torque", 1, &YouBotArmWrapper::callbackSetJointTorque, this);
     }
     subscriberGripperPosition = node.subscribe("arm/gripperPosition", 1, &YouBotArmWrapper::callbackSetGripperPosition, this);
 
-    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/jointState", 1000);
-
+    publisherJointState = node.advertise<sensor_msgs::JointState>("arm/joint_states", 1000);
 
 }
 
@@ -57,27 +56,28 @@ void YouBotArmWrapper::dataUpdateAndPublish(){
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
-        sensor_msgs::JointState massageJointState;
-        massageJointState.name.resize(config->numOfJoints + config->numOfGripper);
-        massageJointState.position.resize(config->numOfJoints + config->numOfGripper);
-        massageJointState.velocity.resize(config->numOfJoints + config->numOfGripper);
-        massageJointState.effort.resize(config->numOfJoints + config->numOfGripper);
+        sensor_msgs::JointState msgJointState;
+        msgJointState.header.stamp = ros::Time::now();
+        msgJointState.name.resize(config->numOfJoints + config->numOfGripper);
+        msgJointState.position.resize(config->numOfJoints + config->numOfGripper);
+        msgJointState.velocity.resize(config->numOfJoints + config->numOfGripper);
+        msgJointState.effort.resize(config->numOfJoints + config->numOfGripper);
 
         for (int i = 0; i < config->numOfJoints; ++i)
         {
-            massageJointState.name[i] = config->name_jointsArm[i];
-            massageJointState.position[i] = jointAngle[i].angle.value();
-            massageJointState.velocity[i] = jointVelocity[i].angularVelocity.value();
-            massageJointState.effort[i] = jointTorque[i].torque.value();
+            msgJointState.name[i] = config->name_jointsArm[i];
+            msgJointState.position[i] = jointAngle[i].angle.value();
+            msgJointState.velocity[i] = jointVelocity[i].angularVelocity.value();
+            msgJointState.effort[i] = jointTorque[i].torque.value();
         }
 
-        massageJointState.name[config->numOfJoints + 0] = config->name_gripperFingerNames[0];
-        massageJointState.position[config->numOfJoints + 0] = gripperBar1Position.barPosition.value();
+        msgJointState.name[config->numOfJoints + 0] = config->name_gripperFingerNames[0];
+        msgJointState.position[config->numOfJoints + 0] = gripperBar1Position.barPosition.value();
 
-        massageJointState.name[config->numOfJoints + 1] = config->name_gripperFingerNames[1];
-        massageJointState.position[config->numOfJoints + 1] = gripperBar2Position.barPosition.value();
+        msgJointState.name[config->numOfJoints + 1] = config->name_gripperFingerNames[1];
+        msgJointState.position[config->numOfJoints + 1] = gripperBar2Position.barPosition.value();
 
-        publisherJointState.publish(massageJointState);
+        publisherJointState.publish(msgJointState);
 
     } catch (std::exception& e){
         const std::string errorMessage = e.what();

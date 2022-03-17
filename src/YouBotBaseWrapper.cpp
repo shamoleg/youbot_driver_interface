@@ -20,17 +20,17 @@ YouBotBaseWrapper::YouBotBaseWrapper(const ros::NodeHandle& n):
         subBasePosition = node.subscribe("base/position", 1000, &YouBotBaseWrapper::callbackSetBasePosition, this);
     }
     if(config->baseControlType["baseJointVelocityControl"]){
-        subJointVelocity = node.subscribe("base/jointVelocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
+        subJointVelocity = node.subscribe("base/joint_velocity", 1000, &YouBotBaseWrapper::callbackSetJointVelocity, this);
     }
     if(config->baseControlType["baseJointCurrentControl"]){
-        subJointCurrent = node.subscribe("base/jointCurrent", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
+        subJointCurrent = node.subscribe("base/joint_current", 1000, &YouBotBaseWrapper::callbackSetJointCurrent, this);
     }
     if(config->baseControlType["baseJointToqueControl"]){
-        subJointToque = node.subscribe("base/jointToque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
+        subJointToque = node.subscribe("base/joint_toque", 1000, &YouBotBaseWrapper::callbackSetJointToque, this);
     }
 
-    pubOdometry = node.advertise<nav_msgs::Odometry>("odom", 1000);
-    pubJointState = node.advertise<sensor_msgs::JointState>("base/jointState", 1000);
+    pubOdometry = node.advertise<nav_msgs::Odometry>("base/odom", 1000);
+    pubJointState = node.advertise<sensor_msgs::JointState>("base/joint_states", 1000);
 
 }
 
