@@ -61,7 +61,6 @@ private:
     tf2_ros::TransformBroadcaster* br;
     ros::NodeHandle node;
 
-
 };
 
 }

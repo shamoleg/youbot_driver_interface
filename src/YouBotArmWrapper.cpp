@@ -45,25 +45,35 @@ YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
         position_joint_interface_.registerHandle(joint_handle_position);
     }
 
-    dummy = 0;
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                                config->name_gripperFinger[0],
-                                                &this->gripperBar1Position.barPosition.value(),
-                                                &dummy,
-                                                &dummy));
+    gripperCycleCounterRead = 0;
+    gripperCycleCounterWrite = 0;
 
-    hardware_interface::JointHandle joint_handle_position = hardware_interface::JointHandle(
+    gripper_r_position_command_ = 0;
+    gripper_l_position_command_ = 0;
+
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
+            config->name_gripperFinger[0],
+            &this->gripperBar1Position.barPosition.value(),
+            &this->dummy,
+            &this->dummy));
+
+    hardware_interface::JointHandle joint_handle_position_r = hardware_interface::JointHandle(
             joint_state_interface_.getHandle(config->name_gripperFinger[0]),
-            &joint_position_command_[joint_id]);
+            &gripper_r_position_command_);
 
-    position_gripper_interface_.registerHandle();
+    position_joint_interface_.registerHandle(joint_handle_position_r);
 
     joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                                config->name_gripperFinger[1],
-                                                &this->gripperBar2Position.barPosition.value(),
-                                                &dummy,
-                                                &dummy));
+            config->name_gripperFinger[1],
+            &this->gripperBar1Position.barPosition.value(),
+            &this->dummy,
+            &this->dummy));
 
+    hardware_interface::JointHandle joint_handle_position_l = hardware_interface::JointHandle(
+            joint_state_interface_.getHandle(config->name_gripperFinger[1]),
+            &gripper_l_position_command_);
+
+    position_joint_interface_.registerHandle(joint_handle_position_l);
 
     registerInterface(&joint_state_interface_);     // From RobotHW base class.
     registerInterface(&position_joint_interface_);  // From RobotHW base class.
@@ -96,12 +106,12 @@ void YouBotArmWrapper::dataUpdateAndPublish(){
         youBotArm->getJointData(jointVelocity);
         youBotArm->getJointData(jointTorque);
 
-        if (this->gripperCycleCounter <= 0) {
-            this->gripperCycleCounter = config->driverCycleFrequencyInHz/5;
+        if (this->gripperCycleCounterRead <= 0) {
+            this->gripperCycleCounterRead = config->driverCycleFrequencyInHz / 5;
             youBotArm->getArmGripper().getGripperBar1().getData(gripperBar1Position);
             youBotArm->getArmGripper().getGripperBar2().getData(gripperBar2Position);
         }
-        this->gripperCycleCounter--;
+        this->gripperCycleCounterRead--;
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
@@ -146,6 +156,27 @@ void YouBotArmWrapper::write(){
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
 
     } catch(std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
+
+    try{
+        youbot::GripperBarPositionSetPoint rightGripperFingerPosition;
+        youbot::GripperBarPositionSetPoint leftGripperFingerPosition;
+
+        rightGripperFingerPosition.barPosition = gripper_r_position_command_ * meter;
+        leftGripperFingerPosition.barPosition = gripper_l_position_command_ * meter;
+
+        if (this->gripperCycleCounterWrite <= 0) {
+            this->gripperCycleCounterWrite = config->driverCycleFrequencyInHz / 5;
+            youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+            youBotArm->getArmGripper().getGripperBar1().setData(rightGripperFingerPosition);
+            youBotArm->getArmGripper().getGripperBar2().setData(leftGripperFingerPosition);
+            youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+        }
+        this->gripperCycleCounterWrite--;
+
+    } catch (std::exception& e){
         const std::string errorMessage = e.what();
         ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
     }

@@ -13,7 +13,7 @@
 	<rosparam file="$(find youbot_driver_interface)/param/youbot_arm_controllers.yaml" command="load"/>
 	<!-- Load controller manager -->
     <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
-	      output="screen" args="spawn joint_state_controller position_trajectory_controller" />
+	      output="screen" args="spawn joint_state_controller position_trajectory_controller gripper_controller" />
 
 	<node name="youbot_driver" pkg="youbot_driver_interface" type="youbot_driver_interface" output="screen"/>
 

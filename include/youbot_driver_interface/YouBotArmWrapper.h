@@ -64,19 +64,21 @@ private:
 
     youbot::GripperSensedBarPosition gripperBar1Position;
     youbot::GripperSensedBarPosition gripperBar2Position;
-    int gripperCycleCounter;
+    int gripperCycleCounterRead;
+    int gripperCycleCounterWrite;
 
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
     std::vector<youbot::JointSensedTorque> jointTorque;
     double joint_position_command_[5];
-    double joint_arm_command_;
+
+    double gripper_r_position_command_;
+    double gripper_l_position_command_;
 
     double dummy;
 
     hardware_interface::JointStateInterface joint_state_interface_;
     hardware_interface::PositionJointInterface position_joint_interface_;
-    hardware_interface::PositionJointInterface position_gripper_interface_;
 
 };
 
