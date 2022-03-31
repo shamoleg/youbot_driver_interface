@@ -19,6 +19,55 @@ YouBotArmWrapper::YouBotArmWrapper(ros::NodeHandle n)
 
     publisherJointState = node.advertise<sensor_msgs::JointState>("arm/joint_states", 1000);
 
+    this->jointAngle.reserve(config->numOfJoints);
+    this->jointVelocity.reserve(config->numOfJoints);
+    this->jointTorque.reserve(config->numOfJoints);
+
+    joint_position_command_[0] = 0.04;
+    joint_position_command_[1] = 0.04;
+    joint_position_command_[2] = -0.04;
+    joint_position_command_[3] = 0.04;
+    joint_position_command_[4] = 0.12;
+
+    for (std::size_t joint_id = 0; joint_id < config->numOfJoints; ++joint_id)
+        {
+
+        joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
+                                                    config->name_jointsArm[joint_id],
+                                                    &this->jointAngle[joint_id].angle.value(),
+                                                    &this->jointVelocity[joint_id].angularVelocity.value(),
+                                                    &this->jointTorque[joint_id].torque.value()));
+
+        hardware_interface::JointHandle joint_handle_position = hardware_interface::JointHandle(
+                joint_state_interface_.getHandle(config->name_jointsArm[joint_id]),
+                &joint_position_command_[joint_id]);
+
+        position_joint_interface_.registerHandle(joint_handle_position);
+    }
+
+    dummy = 0;
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
+                                                config->name_gripperFinger[0],
+                                                &this->gripperBar1Position.barPosition.value(),
+                                                &dummy,
+                                                &dummy));
+
+    hardware_interface::JointHandle joint_handle_position = hardware_interface::JointHandle(
+            joint_state_interface_.getHandle(config->name_gripperFinger[0]),
+            &joint_position_command_[joint_id]);
+
+    position_gripper_interface_.registerHandle();
+
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
+                                                config->name_gripperFinger[1],
+                                                &this->gripperBar2Position.barPosition.value(),
+                                                &dummy,
+                                                &dummy));
+
+
+    registerInterface(&joint_state_interface_);     // From RobotHW base class.
+    registerInterface(&position_joint_interface_);  // From RobotHW base class.
+
 }
 
 YouBotArmWrapper::~YouBotArmWrapper(){
@@ -71,10 +120,10 @@ void YouBotArmWrapper::dataUpdateAndPublish(){
             msgJointState.effort[i] = jointTorque[i].torque.value();
         }
 
-        msgJointState.name[config->numOfJoints + 0] = config->name_gripperFingerNames[0];
+        msgJointState.name[config->numOfJoints + 0] = config->name_gripperFinger[0];
         msgJointState.position[config->numOfJoints + 0] = gripperBar1Position.barPosition.value();
 
-        msgJointState.name[config->numOfJoints + 1] = config->name_gripperFingerNames[1];
+        msgJointState.name[config->numOfJoints + 1] = config->name_gripperFinger[1];
         msgJointState.position[config->numOfJoints + 1] = gripperBar2Position.barPosition.value();
 
         publisherJointState.publish(msgJointState);
@@ -85,13 +134,30 @@ void YouBotArmWrapper::dataUpdateAndPublish(){
     }
 }
 
-void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition){
+void YouBotArmWrapper::write(){
+    try{
+        youbot::JointAngleSetpoint jointPositionsSetpoint;
+
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        for(int jointNumber = 0; jointNumber < config->numOfJoints; ++jointNumber) {
+            jointPositionsSetpoint = joint_position_command_[jointNumber] * radians;
+            youBotArm->getArmJoint(jointNumber+1).setData(jointPositionsSetpoint);
+        }
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+
+    } catch(std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot read gripper values: %s", errorMessage.c_str());
+    }
+}
+
+void YouBotArmWrapper::callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& msgJointPosition){
     try{
         youbot::JointAngleSetpoint jointPositionsSetpoint;
 
         youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
         for(int jointNumber = 0; jointNumber < config->numOfJoints; ++jointNumber){
-            jointPositionsSetpoint = massegeJointPosition->positions[jointNumber].value * radians;
+            jointPositionsSetpoint = msgJointPosition->positions[jointNumber].value * radians;
             youBotArm->getArmJoint(jointNumber + 1).setData(jointPositionsSetpoint);
         }
         youbot::EthercatMaster::getInstance().AutomaticSendOn(true);

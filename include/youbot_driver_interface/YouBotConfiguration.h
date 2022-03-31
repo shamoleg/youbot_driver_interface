@@ -28,7 +28,7 @@ public:
 
     std::vector<std::string> name_wheels;
     std::vector<std::string> name_jointsArm;
-    std::vector<std::string> name_gripperFingerNames;
+    std::vector<std::string> name_gripperFinger;
 
     std::string name_odomFrame;
     std::string name_odomChildFrame;

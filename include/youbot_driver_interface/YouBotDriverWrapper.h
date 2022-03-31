@@ -1,6 +1,7 @@
 #include "YouBotConfiguration.h"
 #include "YouBotBaseWrapper.h"
 #include "YouBotArmWrapper.h"
+#include <controller_manager/controller_manager.h>
 
 
 #include "ros/ros.h"
@@ -15,9 +16,11 @@ public:
     youBot::YouBotBaseWrapper base;
     youBot::YouBotArmWrapper arm;
 
+    controller_manager::ControllerManager* cm;
+
     void getEthercatInstance();
     void initialize();
-    void update();
+    void update(ros::Time prev_time);
 
 };
 

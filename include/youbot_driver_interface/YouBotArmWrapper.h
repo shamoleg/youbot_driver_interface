@@ -20,22 +20,28 @@
 #include <cstdio>
 #include <tf2/LinearMath/Quaternion.h>
 
+#include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/robot_hw.h>
+
 
 namespace youBot{
 
-class YouBotArmWrapper
+class YouBotArmWrapper : public hardware_interface::RobotHW
 {
 public:
     YouBotArmWrapper(ros::NodeHandle n);
 
     void initialize();
     void dataUpdateAndPublish();
+    void write();
+    void registerJointLimits();
 
     ~YouBotArmWrapper();
 private:
 
 
-    void callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& massegeJointPosition);
+    void callbackSetJointPosition(const brics_actuator::JointPositionsConstPtr& msgJointPosition);
     void callbackSetJointVelocity(const brics_actuator::JointVelocitiesConstPtr& massegeJointVelocity);
     void callbackSetJointTorque(const brics_actuator::JointTorquesConstPtr& massegeJointTorque);
     void callbackSetGripperPosition(const brics_actuator::JointPositionsConstPtr& massegeGripperPosition);
@@ -63,10 +69,14 @@ private:
     std::vector<youbot::JointSensedAngle> jointAngle;
     std::vector<youbot::JointSensedVelocity> jointVelocity;
     std::vector<youbot::JointSensedTorque> jointTorque;
+    double joint_position_command_[5];
+    double joint_arm_command_;
 
+    double dummy;
 
-    
-    
+    hardware_interface::JointStateInterface joint_state_interface_;
+    hardware_interface::PositionJointInterface position_joint_interface_;
+    hardware_interface::PositionJointInterface position_gripper_interface_;
 
 };
 

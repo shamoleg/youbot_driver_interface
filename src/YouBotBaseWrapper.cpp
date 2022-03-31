@@ -85,7 +85,7 @@ nav_msgs::Odometry YouBotBaseWrapper::getOdometry() const
 
     geometry_msgs::TransformStamped transformOdom;
     transformOdom.header.frame_id = config->name_odomFrame;
-    transformOdom.child_frame_id = config->name_odomChildFrame;
+    transformOdom.child_frame_id = config->name_odomChildFrame; 
     transformOdom.header.stamp = currentTime;
     transformOdom.transform.translation.x = positionX.value();
     transformOdom.transform.translation.y = positionY.value();

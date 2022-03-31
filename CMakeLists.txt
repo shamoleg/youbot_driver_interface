@@ -7,7 +7,23 @@ add_compile_options(-std=c++14)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS youbot_driver roscpp rosconsole actionlib tf control_msgs brics_actuator pr2_msgs diagnostic_msgs geometry_msgs nav_msgs pr2_msgs std_msgs std_srvs trajectory_msgs)
+find_package(catkin REQUIRED COMPONENTS
+		youbot_driver
+		roscpp
+		rosconsole
+		actionlib
+		tf
+		control_msgs
+		brics_actuator
+		pr2_msgs
+		diagnostic_msgs
+		geometry_msgs
+		nav_msgs
+		pr2_msgs
+		std_msgs
+		std_srvs
+		trajectory_msgs
+		controller_manager)
 find_package(Boost REQUIRED COMPONENTS thread date_time filesystem system)
 
 ## preprocessor definitions

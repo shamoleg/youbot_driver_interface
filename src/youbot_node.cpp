@@ -10,9 +10,14 @@ int main(int argc, char **argv){
     ros::Rate rate(youBot.config->driverCycleFrequencyInHz);
 
     youBot.initialize();
+
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+
+    ros::Time prev_time = ros::Time::now();
     while(n.ok()){
         ros::spinOnce();
-        youBot.update();
+        youBot.update(prev_time);
         rate.sleep();
     }
     return 0;
