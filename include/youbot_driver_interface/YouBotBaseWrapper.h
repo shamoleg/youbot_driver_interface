@@ -48,6 +48,9 @@ private:
     void callbackSetJointVelocity(const std_msgs::Float32MultiArray::ConstPtr& msgJointVelocity) const;
     void callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent) const;
     void callbackSetJointToque(const std_msgs::Float32MultiArray::ConstPtr& msgJointTorque) const;
+
+    template <class T>
+    void callback(const std_msgs::Float32MultiArray::ConstPtr& msg) const;
     
     ros::Subscriber subBaseVelocity;
     ros::Subscriber subBasePosition;

@@ -195,6 +195,25 @@ void YouBotBaseWrapper::callbackSetJointVelocity(const std_msgs::Float32MultiArr
     }
 }
 
+template <class T>
+void YouBotBaseWrapper::callback(const std_msgs::Float32MultiArray::ConstPtr &msg) const
+{
+    try{
+        std::vector<youbot::JointCurrentSetpoint> JointCurrentSetpoint;
+        for(float data : msg->data){
+            T unitSystem;
+            JointCurrentSetpoint.emplace_back(data * unitSystem);
+        }
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(false);
+        youBotBase->setJointData(JointCurrentSetpoint);
+        youbot::EthercatMaster::getInstance().AutomaticSendOn(true);
+    }
+    catch (const std::exception& e){
+        const std::string errorMessage = e.what();
+        ROS_WARN("Cannot set base joints current: %s", errorMessage.c_str());
+    }
+}
+
 void YouBotBaseWrapper::callbackSetJointCurrent(const std_msgs::Float32MultiArray::ConstPtr& msgJointCurrent) const
 {
     try{
