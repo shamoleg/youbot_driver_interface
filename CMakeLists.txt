@@ -150,12 +150,12 @@ catkin_package(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/youbot_driver_interface_node.cpp)
 add_executable(youbot_driver_interface 
-    src/youbot_node.cpp
+    	src/youbot_node.cpp
 		src/YouBotBaseWrapper.cpp
         src/YouBotArmWrapper.cpp
-    src/YouBotDriverWrapper.cpp
-	src/YouBotConfiguration.cpp
-         )
+    	src/YouBotDriverWrapper.cpp
+		src/YouBotConfiguration.cpp
+        )
 
 add_executable(youbot_arm_test 
     src/test.cpp 
