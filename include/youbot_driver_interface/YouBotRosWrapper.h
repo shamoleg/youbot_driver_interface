@@ -26,7 +26,7 @@ public:
     std::string baseName;
     std::map<std::string, bool> baseControlType;
 
-    int numOfArmJoints;
+    int numOfJoints;
     int numOfGripper;
     std::string armName;
     std::map<std::string, bool> armControlType;
@@ -42,44 +42,64 @@ public:
     void operator=(const YouBotConfiguration&) = delete;
 
 protected:
-    explicit YouBotConfiguration(ros::NodeHandle *n);
+    explicit YouBotConfiguration(ros::NodeHandle n);
     static YouBotConfiguration* config;
 
 private:
     ros::NodeHandle node;
 };
 
-
 struct BasePosition
 {
-    double X;
-    double Y;
-    double orientation;
+    double x;
+    double y;
+    double theta;
 
-    BasePosition(): X(0), Y(0), orientation(0) {};
+    BasePosition(): x(0), y(0), theta(0) {};
+    BasePosition(double x, double y, double theta): x(x), y(y), theta(theta) {};
 };
 
 
 struct BaseVelocity
 {
-    double X;
-    double Y;
-    double angularZ;
+    double x;
+    double y;
+    double wz;
 
-    BaseVelocity(): X(0), Y(0), angularZ(0) {};
+    BaseVelocity(): x(0), y(0), wz(0) {};
+    BaseVelocity(double x, double y, double wz): x(x), y(y), wz(wz) {};
 };
 
-struct SetPointJointState
+struct JointState
 {
-    std::vector<double> Angle;
-    std::vector<double> Velocity;
-    std::vector<double> Torque;
+    std::vector<double> angle;
+    std::vector<double> velocity;
+    std::vector<double> torque;
+};
+
+class WrapperYouBotDriverBase
+{
+public:
+    WrapperYouBotDriverBase(std::string baseName, std::string configFilePath);
+
+    void setVelocity(BaseVelocity velocity);
+    BaseVelocity getVelocity();
+
+    void setPosition(BasePosition position);
+    BasePosition getPosition();
+
+    void setJointState(JointState jointState);
+    JointState getJointState();
+
+private:
+    youbot::YouBotBase* youBotBase;
+    
 };
 
 class YouBotBaseWrapper
 {
 public:
-    YouBotBaseWrapper(NodeHandle n);
+    YouBotBaseWrapper(ros::NodeHandle n);
 
 private:
     ros::NodeHandle node;
@@ -94,7 +114,6 @@ private:
 
     ros::Subscriber subSetpointJoint;
     void callbackSetpointJointState(const sensor_msgs::JointState& msg);
-    SetPointJointState setpointJointState;
+    JointState setpointJointState;
 };
-
 }
